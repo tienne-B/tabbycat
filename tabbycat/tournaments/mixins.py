@@ -46,7 +46,7 @@ class TournamentFromUrlMixin:
     (for websocket consumers).
     """
     tournament_slug_url_kwarg = "tournament_slug"
-    tournament_cache_key = "{slug}_object"
+    tournament_cache_key = "{schema}_{slug}_object"
     tournament_redirect_pattern_name = None
 
     def get_url_kwargs(self):
@@ -59,8 +59,9 @@ class TournamentFromUrlMixin:
             return self._tournament_from_url
 
         # then look in cache,
+        schema = self.request.tenant.schema_name if hasattr(self, 'request') else self.scope['schema']
         slug = self.get_url_kwargs()[self.tournament_slug_url_kwarg]
-        key = self.tournament_cache_key.format(slug=slug)
+        key = self.tournament_cache_key.format(schema=schema, slug=slug)
         cached_tournament = cache.get(key)
         if cached_tournament:
             self._tournament_from_url = cached_tournament
@@ -193,7 +194,7 @@ class RoundFromUrlMixin(TournamentFromUrlMixin):
     websocket consumers).
     """
     round_seq_url_kwarg = "round_seq"
-    round_cache_key = "{slug}_{seq}_object"
+    round_cache_key = "{schema}_{slug}_{seq}_object"
     round_redirect_pattern_name = None
 
     @property
@@ -203,8 +204,9 @@ class RoundFromUrlMixin(TournamentFromUrlMixin):
             return self._round_from_url
 
         # then look in cache,
+        schema = self.request.tenant.schema_name if hasattr(self, 'request') else self.scope['schema']
         seq = self.get_url_kwargs()[self.round_seq_url_kwarg]
-        key = self.round_cache_key.format(slug=self.tournament.slug, seq=seq)
+        key = self.round_cache_key.format(schema=schema, slug=self.tournament.slug, seq=seq)
         cached_round = cache.get(key)
         if cached_round:
             self._round_from_url = cached_round

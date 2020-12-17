@@ -1,6 +1,7 @@
 import logging
 
 from django.core.cache import cache
+from django.db import connection
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
@@ -11,16 +12,14 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=Tournament)
 def update_tournament_cache(sender, instance, **kwargs):
-    cached_key = "%s_%s" % (instance.slug, 'object')
-    cache.delete(cached_key)
-    cached_key = "%s_%s" % (instance.slug, 'current_round_object')
-    cache.delete(cached_key)
+    cached_keys = ["%s_%s_%s" % (connection.schema_name, instance.slug, key) for key in ['object', 'current_round_object']]
+    cache.delete_many(cached_keys)
 
 
 @receiver(post_delete, sender=Round)
 @receiver(post_save, sender=Round)
 def update_round_cache(sender, instance, **kwargs):
-    cached_key = "%s_%s_%s" % (instance.tournament.slug, instance.seq, 'object')
+    cached_key = "%s_%s_%s_%s" % (connection.schema_name, instance.tournament.slug, instance.seq, 'object')
     cache.delete(cached_key)
     logger.debug("Cleared cache %s for %s" % (cached_key, instance))
 
