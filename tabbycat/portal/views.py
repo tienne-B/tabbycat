@@ -284,7 +284,13 @@ class SESWebhookView(View):
             return HttpResponse(status=200)
 
         with schema_context(headers.get('X-TCSITE')):
-            message = SentMessage.objects.get(hook_id=headers.get('X-HOOKID'))
+            bn, to, rand = headers.get('X-HOOKID').split('-')
+            message, created = SentMessage.objects.get_or_create(hook_id=headers.get('X-HOOKID'), defaults={
+                'notification_id': bn,
+                'recipient_id': to,
+                'method': SentMessage.METHOD_TYPE_EMAIL,
+                'email': mail_body.get("destination", [None])[0],
+            })
             message.emailstatus_set.create(event=status)
 
         return HttpResponse(status=200)
