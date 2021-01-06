@@ -33,7 +33,7 @@ class TenantSchemaMiddleware:
     def __call__(self, scope):
         for name, value in scope.get("headers", []):
             if name == b"host":
-                schema = value.decode("ascii").split(".")[0]
+                schema = value.decode("ascii").split(".")[0].replace('-', '')
                 assert bool(re.compile(r'^[_a-zA-Z0-9]{1,63}$').match(schema)) and schema[:3] != "pg_", "Must be valid schema"
                 scope['schema'] = schema
                 # with connection.cursor() as cursor:
