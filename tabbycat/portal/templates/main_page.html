@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block page-title %}Main Page{% endblock %}
+{% block page-title %}{% trans "Main Page" %}{% endblock %}
 {% block extra-css %}
 
 <style>
@@ -19,7 +19,7 @@
 <div class="py-5">
   <div class="card p-3 p-md-5 m-md-3 text-center bg-light">
     <div class="card-body my-5">
-      <h1 class="display-4 font-weight-normal">Calico</h1>
+      <h1 class="display-4 font-weight-normal">{% trans "Calico" %}</h1>
       <p class="lead font-weight-normal">{% trans "Tabbycat debate tabulation as a service" %}</p>
       {% if user.is_authenticated %}
         <a href="{% url 'create-instance' %}" class="btn btn-lg btn-success">
@@ -43,14 +43,14 @@
 <div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
   <div class="card flex-1 mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
     <div class="card-body my-3 py-3">
-      <h2 class="display-5">Automatic Setup</h2>
-      <p class="lead">Calico will setup your tab site instantly. All services - emails, databases, etc - are ready for whatever your tournament needs.</p>
+      <h2 class="display-5">{% trans "Everything Works" %}</h2>
+      <p class="lead">{% trans "Calico will setup your tab site instantly. All services - emails, databases, etc - are ready for whatever your tournament needs." %}</p>
     </div>
   </div>
   <div class="card flex-1 mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
     <div class="card-body my-3 py-3">
-      <h2 class="display-5">Archiving Inbuilt</h2>
-      <p class="lead">Calico will keep your tab around indefinitely; ensuring that your tournament's results are always available.</p>
+      <h2 class="display-5">{% trans "Archiving Inbuilt" %}</h2>
+      <p class="lead">{% trans "Calico will keep your tab around indefinitely; ensuring that your tournament's results are always available." %}</p>
     </div>
   </div>
 </div>
@@ -58,14 +58,14 @@
 <div class="d-md-flex flex-md-equal w-100 my-md-3 pl-md-3">
   <div class="card flex-1 mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
     <div class="card-body my-3 py-3">
-      <h2 class="display-5">Predictable Pricing</h2>
-      <p class="lead">Calico charges a clear and low fee of 50$ for hosting your tournament. No need to worry about Dyno or Heroku addon costs.</p>
+      <h2 class="display-5">{% trans "Predictable Pricing" %}</h2>
+      <p class="lead">{% trans "Calico charges a clear and low fee of 50$ for hosting your tournament. No need to worry about Dyno or Heroku addon costs." %}</p>
     </div>
   </div>
   <div class="card flex-1 mr-md-3 pt-3 px-3 pt-md-5 px-md-5 text-center overflow-hidden">
     <div class="card-body my-3 py-3">
-      <h2 class="display-5">Automatic Scaling</h2>
-      <p class="lead">Calico shares hosting resources to ensure that all tournaments are always ready for any amount of traffic.</p>
+      <h2 class="display-5">{% trans "Automatic Scaling" %}</h2>
+      <p class="lead">{% trans "Calico shares hosting resources to ensure that all tournaments are always ready for any amount of traffic." %}</p>
     </div>
   </div>
 </div>
