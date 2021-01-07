@@ -231,9 +231,7 @@ class StripeWebhookView(View):
 
     def on_payment_deny(self, payment):
         client = get_object_or_404(Client, payment_id=payment['id'])
-        if not client.domains.exists():
-            client._drop_schema()
-        client.delete()
+        client.delete(force_drop=not client.domains.exists())
 
 
 class CancelledPaymentRedirectView(View):
