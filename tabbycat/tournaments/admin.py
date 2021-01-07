@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import connection
 
 from .models import Round, Tournament
 
@@ -11,6 +12,15 @@ from .models import Round, Tournament
 class TournamentAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'seq', 'short_name', 'current_round', 'active')
     ordering = ('seq', )
+
+    def has_add_permission(self, request):
+        return super().has_add_permission(request) and not connection.tenant.archive
+
+    def has_change_permission(self, request, obj=None):
+        return super().has_change_permission(request, obj) and not connection.tenant.archive
+
+    def has_delete_permission(self, request, obj=None):
+        return super().has_delete_permission(request, obj) and not connection.tenant.archive
 
 
 # ==============================================================================

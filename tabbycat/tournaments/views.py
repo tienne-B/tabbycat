@@ -6,6 +6,7 @@ from threading import Lock
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
+from django.db import connection
 from django.db.models import Count, Q
 from django.shortcuts import redirect, resolve_url
 from django.urls import reverse_lazy
@@ -232,6 +233,9 @@ class CreateTournamentView(AdministratorMixin, WarnAboutDatabaseUseMixin, Create
     form_class = TournamentStartForm
     template_name = "create_tournament.html"
     db_warning_severity = messages.ERROR
+
+    def test_func(self):
+        return super().test_func() and not connection.tenant.archive
 
     def get_context_data(self, **kwargs):
         demo_datasets = [
