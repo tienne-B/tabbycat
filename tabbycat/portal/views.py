@@ -226,8 +226,11 @@ class StripeWebhookView(View):
         client.save()
 
         # Add domain
-        main_instance = Instance.objects.get(tenant__schema_name='public', is_primary=True)
-        Instance.objects.get_or_create(tenant=client, domain=client.schema_name.lower() + "." + main_instance.domain)
+        main_instance = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
+        domains = [Instance(tenant=client, domain=client.schema_name + "." + main_instance, is_primary=True)]
+        if not client.schema_name.islower():
+            domains.append(Instance(tenant=client, domain=client.schema_name.lower() + "." + main_instance, is_primary=False))
+        Instance.objects.bulk_create(domains, ignore_conflicts=True)
 
     def on_payment_deny(self, payment):
         client = get_object_or_404(Client, payment_id=payment['id'])
