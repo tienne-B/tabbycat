@@ -6,22 +6,24 @@ operations they are handled asynchronously with connections purged before and
 after the query, so the search_path gets reset.
 """
 
-import re
-
 import pytz
 from channels.auth import _get_user_session_key, AuthMiddleware
 from channels.db import database_sync_to_async
 from channels.sessions import CookieMiddleware, SessionMiddleware, SessionMiddlewareInstance
 from django.conf import settings
-from django.contrib.auth import (
-    BACKEND_SESSION_KEY,
-    HASH_SESSION_KEY,
-    load_backend,
-)
+from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, load_backend
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
 from django.utils.crypto import constant_time_compare
 from django_tenants.utils import schema_context
+
+from .models import Instance
+
+
+@database_sync_to_async
+def get_schema(host):
+    with schema_context('public'):
+        return Instance.objects.select_related('tenant').get(domain=host).tenant.schema_name
 
 
 class TenantSchemaMiddleware:
@@ -31,17 +33,21 @@ class TenantSchemaMiddleware:
         self.inner = inner
 
     def __call__(self, scope):
-        for name, value in scope.get("headers", []):
-            if name == b"host":
-                schema = value.decode("ascii").split(".")[0].replace('-', '')
-                assert bool(re.compile(r'^[_a-zA-Z0-9]{1,63}$').match(schema)) and schema[:3] != "pg_", "Must be valid schema"
-                scope['schema'] = schema
-                # with connection.cursor() as cursor:
-                #     cursor.execute("SET search_path to %s, public;", [schema])
-                break
-        else:
-            raise KeyError("Host is not in headers")
-        return self.inner(scope)
+        return TenantSchemaMiddlewareInstance(scope, self)
+
+
+class TenantSchemaMiddlewareInstance:
+
+    def __init__(self, scope, middleware):
+        self.middleware = middleware
+        self.scope = dict(scope)
+        self.inner = self.middleware.inner
+
+    async def __call__(self, receive, send):
+        headers = dict(self.scope.get('headers', []))
+        if b"host" in headers:
+            self.scope['schema'] = await get_schema(headers[b'host'].decode('ascii').split(":")[0])
+        return await self.inner(self.scope)(receive, send)
 
 
 @database_sync_to_async
