@@ -16,8 +16,8 @@
       <form id="create_account" action="." method="POST">
       {% csrf_token %}
 
-        {% trans "Create Tabbycat Account" context "page title" as title %}
-        {% trans "An account will allow you to create Tabbycat sites." as text %}
+        {% trans "Create Calico Account" context "page title" as title %}
+        {% trans "An account will allow you to create Tabbycat sites, and will serve as your account on sites you create." as text %}
         {% include "components/form-title.html" with emoji="🔐" p1="" p2="" %}
 
         {% include "components/form-main.html" %}
