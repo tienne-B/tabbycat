@@ -10,4 +10,4 @@ django-redis==4.12.1                    # Use redis for cache (on heroku; local 
 
 # Misc
 scout-apm==2.14.3                       # Performance monitoring
-sentry-sdk==0.19.3                      # Client for Sentry error tracking
+sentry-sdk==0.19.5                      # Client for Sentry error tracking
