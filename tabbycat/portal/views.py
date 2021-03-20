@@ -213,7 +213,6 @@ class StripeWebhookView(View):
         actions = {
             'payment_intent.succeeded': self.on_payment_success,
             'payment_intent.canceled': self.on_payment_deny,
-            'payment_intent.payment_failed': self.on_payment_deny,
         }
         if event['type'] in actions:
             actions[event['type']](event['data']['object'])
