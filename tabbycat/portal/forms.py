@@ -1,10 +1,16 @@
+import stripe
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
+from django.core.exceptions import ValidationError
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
-from .models import Client
+from .models import Client, Instance
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 class UserCreationForm(BaseUserCreationForm):
@@ -14,10 +20,6 @@ class UserCreationForm(BaseUserCreationForm):
 
 
 class InstanceCreationForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Client
@@ -29,17 +31,46 @@ class InstanceCreationForm(forms.ModelForm):
             "schema_name": _("The name used in the URL of the site. Must be alphanumeric."),
         }
 
+    def clean_schema_name(self):
+        name = self.cleaned_data['schema_name']
+        main_domain = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
+        if Client.objects.filter(Q(schema_name=name) | Q(domains__domain=name + main_domain)).exists():
+            raise ValidationError(_("A site with that slug already exists!"))
+        return name
+
+    def create_schema(self, client):
+        async_to_sync(get_channel_layer().send)("portal", {
+            "type": "create_schema",
+            "client": client.id,
+        })
+
     def save(self, commit=True):
         client = super().save(commit=False)
-        client.user = self.user
 
         if commit:
             client.save()
+            self.create_schema(client)
 
-            # Create schema
-            async_to_sync(get_channel_layer().send)("portal", {
-                "type": "create_schema",
-                "client": client.id,
-            })
+        return client
 
+
+class InvoicedInstanceCreationForm(InstanceCreationForm):
+
+    invoice = forms.CharField(label=_("Invoice Number"))
+
+    def clean_invoice(self):
+        try:
+            invoice = stripe.Invoice.retrieve(self.cleaned_data['invoice'])
+            return invoice['payment_intent']
+        except stripe.InvalidRequestError:
+            raise ValidationError(_("No invoice with that ID exists."))
+
+    def save(self, commit=True):
+        client = super().save(commit=False)
+        client.payment_id = self.cleaned_data['invoice']['payment_intent']
+        client.paid = self.cleaned_data['invoice']['total']
+
+        if commit:
+            client.save()
+            self.create_schema(client)
         return client

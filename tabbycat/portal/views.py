@@ -21,7 +21,7 @@ from utils.mixins import AssistantMixin
 from utils.tables import BaseTableBuilder
 from utils.views import PostOnlyRedirectView, VueTableTemplateView
 
-from .forms import InstanceCreationForm, UserCreationForm
+from .forms import InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
 from .models import Client, Instance
 
 logger = logging.getLogger(__name__)
@@ -66,7 +66,6 @@ class ListOwnTournamentsView(AssistantMixin, VueTableTemplateView):
             try:
                 c_row['link'] = get_instance_url(self.request, c.domains.get(is_primary=True))
             except Instance.DoesNotExist:
-                c_row['link'] = reverse('stripe-payment-redirect', kwargs={'schema': c.schema_name})
                 c_row['text'] += _(" (Unpaid)")
             instances.append(c_row)
             control_links.append({'link': reverse('tournament-detail', kwargs={'schema': c.schema_name}), 'text': _("Control")})
@@ -142,59 +141,66 @@ class CreateInstanceFormView(AssistantMixin, FormView):
     template_name = 'create_instance_form.html'
     form_class = InstanceCreationForm
 
+    def get_context_data(self, **kwargs):
+        kwargs['STRIPE_PUBLIC_KEY'] = settings.STRIPE_PUBLISH_KEY
+        kwargs['main_domain'] = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
+        return super().get_context_data(**kwargs)
+
     def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
+        """Return the keyword arguments for instantiating the form."""
+        kwargs = {
+            'initial': self.get_initial(),
+            'prefix': self.get_prefix(),
+        }
+
+        if self.request.method in ('POST', 'PUT'):
+            kwargs.update({
+                'data': json.loads(self.request.body),
+                'files': self.request.FILES,
+            })
         return kwargs
 
     def form_valid(self, form):
         self.object = form.save()
+        customer = stripe.Customer.create(email=self.request.user.email)
+        intent = stripe.PaymentIntent.create(
+            amount=5000,
+            currency='cad',
+            description=self.object.name,
+            customer=customer['id'],
+            metadata={
+                "product": "Calico Site",
+                "name": self.object.name,
+                "slug": self.object.schema_name,
+                "timezone": self.object.timezone,
+                "user": self.request.user.username,
+            },
+        )
+        self.object.payment_id = intent['id']
+        self.object.user = self.request.user
+        self.object.save()
+        return JsonResponse({'clientSecret': intent['client_secret']})
+
+    def form_invalid(self, form):
+        return JsonResponse(form.errors.get_json_data(escape_html=True))
+
+
+class InvoicedCreateInstanceFormView(AssistantMixin, FormView):
+    template_name = 'base_create_instance_form.html'
+    form_class = InvoicedInstanceCreationForm
+
+    def form_valid(self, form):
+        self.object = form.save()
+        self.object.user = self.request.user
+        self.object.save()
+
+        main_instance = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
+        self.instance = Instance(tenant=self.object, domain=self.object.schema_name + "." + main_instance, is_primary=True).save()
+
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse('stripe-payment-redirect', kwargs={'schema': self.object.schema_name})
-
-
-class StripeSessionView(AssistantMixin, View):
-
-    def post(self, request, *args, **kwargs):
-        body = json.loads(request.body)
-        client = get_object_or_404(Client, user=request.user, pk=body['client_id'])
-
-        if client.session_id:
-            return JsonResponse({'sessionId': client.session_id}, status=201)
-
-        session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price': settings.INSTANCE_PRICE_ID,
-                'quantity': 1,
-                'description': client.name,
-            }],
-            mode='payment',
-            success_url=request.build_absolute_uri(reverse('successful-payment')) + '?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=request.build_absolute_uri(reverse('cancelled-payment')),
-        )
-        client.session_id = session['id']
-        client.payment_id = session['payment_intent']
-        client.save()
-        return JsonResponse({'sessionId': session['id']}, status=201)
-
-
-class StripeRedirectView(AssistantMixin, TemplateView):
-    template_name = 'square_redirect.html'
-
-    def get(self, request, *args, **kwargs):
-        self.client = Client.objects.get(schema_name=self.kwargs['schema'])
-        if self.client.paid > 1000:  # Some number, but redirect if already paid
-            return HttpResponseRedirect(get_instance_url(request, self.client.get_primary_domain()))
-        return super().get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        kwargs = super().get_context_data(**kwargs)
-        kwargs['client'] = self.client
-        kwargs['stripe_public_key'] = settings.STRIPE_PUBLISH_KEY
-        return kwargs
+        return get_instance_url(self.request, self.instance)
 
 
 class StripeWebhookView(View):
@@ -213,6 +219,7 @@ class StripeWebhookView(View):
         actions = {
             'payment_intent.succeeded': self.on_payment_success,
             'payment_intent.canceled': self.on_payment_deny,
+            'payment_intent.payment_failed': self.on_payment_deny,
         }
         if event['type'] in actions:
             actions[event['type']](event['data']['object'])
@@ -234,25 +241,6 @@ class StripeWebhookView(View):
     def on_payment_deny(self, payment):
         client = get_object_or_404(Client, payment_id=payment['id'])
         client.delete(force_drop=not client.domains.exists())
-
-
-class CancelledPaymentRedirectView(View):
-    redirect_url = reverse_lazy('global-main-page')
-
-    def get(self, request, *args, **kwargs):
-        messages.error(self.request, _("The payment was cancelled."))
-        return HttpResponseRedirect(self.redirect_url)
-
-
-class SuccessfulPaymentLandingView(View):
-
-    def get(self, request, *args, **kwargs):
-        session_id = self.request.GET.get('session_id')
-        if session_id is None:
-            return HttpResponseRedirect(reverse('create-instance'))
-
-        client = Client.objects.get(session_id=session_id)
-        return HttpResponseRedirect(get_instance_url(request, client.get_primary_domain()))
 
 
 class SESWebhookView(View):

@@ -6,10 +6,6 @@
     <a class="btn btn-outline-primary active" href="//{{ domain.domain }}">
       {% trans "Go to Site" %}
     </a>
-  {% else %}
-    <a class="btn btn-outline-success active" href="{% url 'stripe-payment-redirect' schema=client.schema_name %}">
-      {% trans "Payment" %}
-    </a>
   {% endif %}
 </div>
 
