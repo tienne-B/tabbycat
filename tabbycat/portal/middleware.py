@@ -1,4 +1,4 @@
-"""Tenant middleware for websockets
+"""Tenant middleware
 
 These classes redefine middleware used for websocket authentication so that
 users are found in the correct schema. This is necessary for database
