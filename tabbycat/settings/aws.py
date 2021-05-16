@@ -3,9 +3,11 @@
 import os
 
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.tabbycat-debate.org').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.calicotab.com').split(',')
 SECRET_KEY = os.environ.get('DJ_SECRET_KEY')
 STATIC_URL = os.getenv('STATIC_URL', '/static/')
+
+BASE_DOMAIN = os.environ.get('BASE_DOMAIN', 'calicotab.com')
 
 # ==============================================================================
 # Database
@@ -34,7 +36,7 @@ TENANT_LIMIT_SET_CALLS = True
 # ==============================================================================
 
 MIDDLEWARE = [
-    'django_tenants.middleware.main.TenantMainMiddleware',
+    'portal.main_middleware.TenantMainMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
