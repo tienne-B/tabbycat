@@ -205,6 +205,12 @@ class InvoicedCreateInstanceFormView(AssistantMixin, FormView):
 
 class StripeWebhookView(View):
 
+    def get_object(self, payment_id):
+        try:
+            return Client.objects.get(payment_id=payment_id)
+        except Client.DoesNotExist:
+            return HttpResponse(status=204)
+
     def post(self, request, *args, **kwargs):
         signature = request.META['HTTP_STRIPE_SIGNATURE']
         logger.info(signature)
@@ -227,7 +233,7 @@ class StripeWebhookView(View):
         return HttpResponse(status=200)
 
     def on_payment_success(self, payment):
-        client = get_object_or_404(Client, payment_id=payment['id'])
+        client = self.get_object(payment['id'])
         client.paid = payment.get('amount', 0)
         client.save()
 
@@ -239,7 +245,7 @@ class StripeWebhookView(View):
         Instance.objects.bulk_create(domains, ignore_conflicts=True)
 
     def on_payment_deny(self, payment):
-        client = get_object_or_404(Client, payment_id=payment['id'])
+        client = self.get_object(payment['id'])
         client.delete(force_drop=not client.domains.exists())
 
 
