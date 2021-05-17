@@ -205,12 +205,6 @@ class InvoicedCreateInstanceFormView(AssistantMixin, FormView):
 
 class StripeWebhookView(View):
 
-    def get_object(self, payment_id):
-        try:
-            return Client.objects.get(payment_id=payment_id)
-        except Client.DoesNotExist:
-            return HttpResponse(status=204)
-
     def post(self, request, *args, **kwargs):
         signature = request.META['HTTP_STRIPE_SIGNATURE']
         logger.info(signature)
@@ -221,6 +215,11 @@ class StripeWebhookView(View):
             return HttpResponse(status=400)
         except stripe.error.SignatureVerificationError:  # Invalid signature
             return HttpResponse(status=400)
+
+        try:
+            self.client = Client.objects.get(payment_id=event['data']['object']['id'])
+        except Client.DoesNotExist:
+            return HttpResponse(status=204)
 
         actions = {
             'payment_intent.succeeded': self.on_payment_success,
@@ -233,20 +232,18 @@ class StripeWebhookView(View):
         return HttpResponse(status=200)
 
     def on_payment_success(self, payment):
-        client = self.get_object(payment['id'])
-        client.paid = payment.get('amount', 0)
-        client.save()
+        self.client.paid = payment.get('amount', 0)
+        self.client.save()
 
         # Add domain
         main_instance = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
-        domains = [Instance(tenant=client, domain=client.schema_name + "." + main_instance, is_primary=True)]
-        if not client.schema_name.islower():
-            domains.append(Instance(tenant=client, domain=client.schema_name.lower() + "." + main_instance, is_primary=False))
+        domains = [Instance(tenant=self.client, domain=self.client.schema_name + "." + main_instance, is_primary=True)]
+        if not self.client.schema_name.islower():
+            domains.append(Instance(tenant=self.client, domain=self.client.schema_name.lower() + "." + main_instance, is_primary=False))
         Instance.objects.bulk_create(domains, ignore_conflicts=True)
 
     def on_payment_deny(self, payment):
-        client = self.get_object(payment['id'])
-        client.delete(force_drop=not client.domains.exists())
+        self.client.delete(force_drop=not self.client.domains.exists())
 
 
 class SESWebhookView(View):
