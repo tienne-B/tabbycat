@@ -19,7 +19,7 @@ class ClientAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_editable = ('archive', 'paid')
     search_fields = ('schema_name', 'name', 'user__username')
     inlines = (DomainInline,)
-    actions = ['create_schema', 'migrate_schema']
+    actions = ['create_schema', 'migrate_schema', 'create_migrate_schema']
 
     def create_schema(self, request, queryset):
         for client in queryset:
