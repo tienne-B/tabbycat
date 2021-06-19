@@ -14,13 +14,13 @@ class TournamentAdmin(admin.ModelAdmin):
     ordering = ('seq', )
 
     def has_add_permission(self, request):
-        return super().has_add_permission(request) and not connection.tenant.archive
+        return super().has_add_permission(request) and not connection.tenant.is_archived
 
     def has_change_permission(self, request, obj=None):
-        return super().has_change_permission(request, obj) and not connection.tenant.archive
+        return super().has_change_permission(request, obj) and not connection.tenant.is_archived
 
     def has_delete_permission(self, request, obj=None):
-        return super().has_delete_permission(request, obj) and not connection.tenant.archive
+        return super().has_delete_permission(request, obj) and not connection.tenant.is_archived
 
 
 # ==============================================================================

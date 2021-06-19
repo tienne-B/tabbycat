@@ -18,8 +18,9 @@
       {% csrf_token %}
 
         {% trans "Create Tabbycat Site" context "page title" as title %}
-        {% trans "This form will create a Tabbycat site on which you can create tournaments!" as text %}
-        {% include "components/form-title.html" with emoji="✨" p1="" p2="" %}
+        {% trans "This form will create a Tabbycat site on which you can create tournaments for your event!" as text %}
+        {% trans "A site can be used for many tournaments that are part of an overarching event. The creation of tournaments will be disabled after the event, so new sites will be necessary for subsequent events." as p1 %}
+        {% include "components/form-title.html" with emoji="✨" p2="" %}
 
         {% include "components/form-main.html" %}
 

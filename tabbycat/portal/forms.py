@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
 from django.core.exceptions import ValidationError
 from django.db.models import Q
-from django.forms.widgets import Select
+from django.forms.widgets import DateInput, Select
 from django.utils.translation import gettext_lazy as _
 from pytz import common_timezones
 
@@ -18,6 +18,10 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 class DatalistWidget(Select):
     input_type = 'text'
     template_name = 'widgets/datalist.html'
+
+
+class CalendarDateInputWidget(DateInput):
+    input_type = 'date'
 
 
 class UserCreationForm(BaseUserCreationForm):
@@ -38,6 +42,9 @@ class InstanceCreationForm(forms.ModelForm):
         }
         help_texts = {
             "schema_name": _("The name used in the URL of the site. Must be alphanumeric."),
+        }
+        widgets = {
+            "end_date": CalendarDateInputWidget,
         }
 
     def clean_schema_name(self):
