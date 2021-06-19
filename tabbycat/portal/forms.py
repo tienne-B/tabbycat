@@ -6,11 +6,18 @@ from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.forms.widgets import Select
 from django.utils.translation import gettext_lazy as _
+from pytz import common_timezones
 
 from .models import Client, Instance
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+class DatalistWidget(Select):
+    input_type = 'text'
+    template_name = 'widgets/datalist.html'
 
 
 class UserCreationForm(BaseUserCreationForm):
@@ -20,10 +27,12 @@ class UserCreationForm(BaseUserCreationForm):
 
 
 class InstanceCreationForm(forms.ModelForm):
+    timezone = forms.ChoiceField(widget=DatalistWidget, choices=((t, t) for t in common_timezones),
+        help_text=_("IANA time zone to use when showing times"))
 
     class Meta:
         model = Client
-        fields = ("name", "schema_name", "timezone")
+        fields = ("name", "schema_name", "end_date", "timezone")
         labels = {
             "schema_name": _("Slug"),
         }
