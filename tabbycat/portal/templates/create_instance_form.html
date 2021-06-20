@@ -11,12 +11,6 @@
 {% block nav %}{% endblock %}
 
 {% block page-alerts %}
-{% url 'create-instance-invoice' as invoice_url %}
-{% blocktrans trimmed with invoice_url=invoice_url asvar message %}
-Please use <a href="{{ invoice_url }}">this form</a> to create a site if you have an invoice number. Contact <a href="mailto:ebeaule@tabbycat-debate.org">Étienne</a> if it would be preferable.
-{% endblocktrans %}
-{% include "components/alert.html" with type="info" %}
-
 {% blocktrans trimmed asvar message %}
 Your payment has been received and your Tabbycat site is currently being set up. It will be available shortly (in around a minute) at <a></a>.
 {% endblocktrans %}
@@ -41,7 +35,10 @@ Your payment is currently being processed.
         {% trans "Create Tabbycat Site" context "page title" as title %}
         {% trans "This form will create a Tabbycat site on which you can create tournaments for your event!" as text %}
         {% trans "A site can be used for many tournaments that are part of an overarching event. The creation of tournaments will be disabled after the event, so new sites will be necessary for subsequent events." as p1 %}
-        {% include "components/form-title.html" with emoji="✨" p2="" %}
+        {% blocktrans trimmed asvar p2 %}
+        Contact <a href="mailto:ebeaule@tabbycat-debate.org">Étienne</a> if you're experiencing difficulties with the form or require another payment method.
+        {% endblocktrans %}
+        {% include "components/form-title.html" with emoji="✨" %}
 
         {% include "components/form-main.html" %}
 
