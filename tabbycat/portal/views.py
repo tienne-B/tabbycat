@@ -140,6 +140,7 @@ class BackupInstanceView(AssistantMixin, PostOnlyRedirectView):
 class CreateInstanceFormView(AssistantMixin, FormView):
     template_name = 'create_instance_form.html'
     form_class = InstanceCreationForm
+    initial = {'currency': 'cad'}
 
     def get_context_data(self, **kwargs):
         kwargs['STRIPE_PUBLIC_KEY'] = settings.STRIPE_PUBLISH_KEY
@@ -162,10 +163,14 @@ class CreateInstanceFormView(AssistantMixin, FormView):
 
     def form_valid(self, form):
         self.object = form.save()
+        currency_amounts = {
+            'cad': 5000,
+            'usd': 4000,
+        }
         customer = stripe.Customer.create(email=self.request.user.email)
         intent = stripe.PaymentIntent.create(
-            amount=5000,
-            currency='cad',
+            amount=currency_amounts.get(self.object.currency, 5000),
+            currency=self.object.currency,
             description=self.object.name,
             customer=customer['id'],
             metadata={
