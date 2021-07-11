@@ -33,7 +33,7 @@ class UserCreationForm(BaseUserCreationForm):
 class InstanceCreationForm(forms.ModelForm):
     timezone = forms.ChoiceField(widget=DatalistWidget, choices=((t, t) for t in common_timezones),
         label=_("Time zone"), help_text=_("IANA time zone to use when showing times"))
-    currency = forms.ChoiceField(label=_("Payment Currency"),
+    currency = forms.ChoiceField(label=_("Payment currency"),
         help_text=_("Calico supports payment in USD as well as CAD. The amount is shown in the dropdown."),
         choices=(
             ('cad', _("Canadian Dollar (50CAD)")),
@@ -51,6 +51,12 @@ class InstanceCreationForm(forms.ModelForm):
         widgets = {
             "end_date": CalendarDateInputWidget,
         }
+
+    def clean_timezone(self):
+        tz = self.cleaned_data['timezone']
+        if tz not in common_timezones:
+            raise ValidationError(_("Invalid timezone"))
+        return tz
 
     def clean_schema_name(self):
         name = self.cleaned_data['schema_name']
