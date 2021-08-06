@@ -33,6 +33,14 @@ def get_instance_url(request, instance):
     return "//" + instance.domain + "/"
 
 
+class ClientObjectMixin:
+    @property
+    def client(self):
+        if not hasattr(self, "_client"):
+            self._client = get_object_or_404(Client, user=self.request.user, schema_name=self.kwargs['schema'])
+        return self._client
+
+
 class CreateAccountView(FormView):
     template_name = 'registration/create_account.html'
     form_class = UserCreationForm
@@ -79,7 +87,7 @@ class ListOwnTournamentsView(AssistantMixin, VueTableTemplateView):
         return table
 
 
-class TournamentDetailView(AssistantMixin, TemplateView):
+class TournamentDetailView(AssistantMixin, ClientObjectMixin, VueTableTemplateView):
     template_name = "tournament_detail.html"
 
     def get_context_data(self, **kwargs):
@@ -91,7 +99,7 @@ class TournamentDetailView(AssistantMixin, TemplateView):
         return kwargs
 
 
-class DeleteInstanceView(AssistantMixin, TemplateView):
+class DeleteInstanceView(AssistantMixin, ClientObjectMixin, TemplateView):
     template_name = 'delete-site.html'
 
     def get_redirect_url(self, *args, **kwargs):
@@ -138,17 +146,9 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         return super().get_context_data(**kwargs)
 
     def get_form_kwargs(self):
-        """Return the keyword arguments for instantiating the form."""
-        kwargs = {
-            'initial': self.get_initial(),
-            'prefix': self.get_prefix(),
-        }
-
+        kwargs = super().get_form_kwargs()
         if self.request.method in ('POST', 'PUT'):
-            kwargs.update({
-                'data': json.loads(self.request.body),
-                'files': self.request.FILES,
-            })
+            kwargs['data'] = json.loads(self.request.body)
         return kwargs
 
     def form_valid(self, form):
