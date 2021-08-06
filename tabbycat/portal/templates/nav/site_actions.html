@@ -10,7 +10,7 @@
 </div>
 
 <div class="btn-group">
-  <form action="{% url 'backup-instance' schema=client.schema_name %}" method="POST">
+  <form action="{% url 'export-instance-db' schema=client.schema_name %}" method="POST">
     {% csrf_token %}
     <button class="btn btn-primary" id="generateSiteBackup" type="submit">
       {% trans "Download Backup" %}

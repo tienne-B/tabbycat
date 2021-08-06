@@ -120,7 +120,7 @@ class DeleteInstanceView(AssistantMixin, ClientObjectMixin, TemplateView):
         return HttpResponseRedirect(self.get_redirect_url(*args, **kwargs))
 
 
-class BackupInstanceView(AssistantMixin, PostOnlyRedirectView):
+class ExportInstanceDatabaseView(AssistantMixin, ClientObjectMixin, PostOnlyRedirectView):
 
     def create_filename(self):
         date = time.strftime("%Y-%m-%d-%H-%M", time.gmtime())
