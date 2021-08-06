@@ -23,6 +23,7 @@ from utils.views import PostOnlyRedirectView, VueTableTemplateView
 
 from .forms import InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
 from .models import Client, Instance
+from .utils import get_postgres_url
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -117,19 +118,8 @@ class BackupInstanceView(AssistantMixin, PostOnlyRedirectView):
         date = time.strftime("%Y-%m-%d-%H-%M", time.gmtime())
         return "%s-%s.sql" % (self.client.schema_name, date)
 
-    def get_postgres_params(self):
-        db = settings.DATABASES['default']
-        return [
-            'pg_dump',
-            'postgres://%s:%s@%s:%s/%s' % (db['USER'], db['PASSWORD'], db['HOST'], db['PORT'], db['NAME']),
-            '-n', self.client.schema_name,
-            '-O', '-x',
-        ]
-
     def post(self, request, *args, **kwargs):
-        self.client = get_object_or_404(Client, user=request.user, schema_name=self.kwargs['schema'])
-
-        process = Popen(self.get_postgres_params(), stdout=PIPE)
+        process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-O', '-x'], stdout=PIPE)
         output, errors = process.communicate()
 
         response = HttpResponse(content_type='application/sql', content=output)

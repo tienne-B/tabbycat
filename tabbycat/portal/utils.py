@@ -1,3 +1,4 @@
+from django.conf import settings
 from django_tenants.utils import schema_context
 
 
@@ -17,3 +18,8 @@ def ws_using_tenant_schema(func):
         with schema_context(args[0].scope['schema']):
             return func(*args, **kwargs)
     return switch_schema
+
+
+def get_postgres_url():
+    db = settings.DATABASES['default']
+    return 'postgres://%s:%s@%s:%s/%s' % (db['USER'], db['PASSWORD'], db['HOST'], db['PORT'], db['NAME'])
