@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _, gettext_lazy
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormMixin, FormView
 from django_tenants.utils import schema_context
 
 from notifications.models import EmailStatus, SentMessage
@@ -87,15 +87,35 @@ class ListOwnTournamentsView(AssistantMixin, VueTableTemplateView):
         return table
 
 
-class TournamentDetailView(AssistantMixin, ClientObjectMixin, VueTableTemplateView):
+class TournamentDetailView(AssistantMixin, ClientObjectMixin, FormMixin, VueTableTemplateView):
     template_name = "tournament_detail.html"
+    form_class = BackupInstanceForm
+
+    def get_table(self):
+        if self.client.is_pro:
+            empty_title = _("No data available")
+        else:
+            empty_title = _("The plan of the instance does not include backup storage")
+
+        table = BaseTableBuilder(title=_("Backups"), empty_title=empty_title, sort_key='timestamp')
+        qs = self.client.backup_set.all().order_by('-timestamp')
+
+        table.add_column({'key': 'radio', 'name': 'backup', 'title': ""}, [{
+            'component': 'radio-cell',
+            'checked': False,
+            'sort': False,
+            'value': b.id,
+            'name': 'backup',
+        } for b in qs])
+        table.add_column({'key': 'name', 'title': _("Name")}, [b.name for b in qs])
+        table.add_column({'key': 'timestamp', 'title': _("Time")}, [b.timestamp for b in qs])
+        return table
 
     def get_context_data(self, **kwargs):
-        client = get_object_or_404(Client, user=self.request.user, schema_name=self.kwargs['schema'])
         kwargs = super().get_context_data(**kwargs)
-        kwargs['client'] = client
-        kwargs['page_title'] = client.name
-        kwargs['domain'] = client.get_primary_domain()
+        kwargs['client'] = self.client
+        kwargs['page_title'] = self.client.name
+        kwargs['domain'] = self.client.get_primary_domain()
         return kwargs
 
 
@@ -106,16 +126,14 @@ class DeleteInstanceView(AssistantMixin, ClientObjectMixin, TemplateView):
         return reverse('own-tournaments-list')
 
     def get_context_data(self, **kwargs):
-        client = get_object_or_404(Client, user=self.request.user, schema_name=self.kwargs['schema'])
         kwargs = super().get_context_data(**kwargs)
-        kwargs['client'] = client
+        kwargs['client'] = self.client
         return kwargs
 
     def post(self, request, *args, **kwargs):
-        client = get_object_or_404(Client, user=request.user, schema_name=self.kwargs['schema'])
-        name = client.name
+        name = self.client.name
 
-        client.delete()
+        self.client.delete()
         messages.success(request, _("Deleted the %s site" % name))
         return HttpResponseRedirect(self.get_redirect_url(*args, **kwargs))
 

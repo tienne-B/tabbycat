@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "tables/base_vue_table.html" %}
 {% load add_field_css i18n %}
 
 {% block head-title %}{% endblock %}
@@ -16,10 +16,31 @@
 
     <div class="card">
 
+      {% if client.is_pro %}
+      <form id="create-backup" action="{% url 'backup-instance' schema=client.schema_name %}" method="POST">
+      {% csrf_token %}
+
+        {% include "components/form-main.html" %}
+
+        {% trans "Create Backup" context "button" as title %}
+        {% include "components/form-submit.html" %}
+      </form>
+      {% endif %}
+
     </div>
 
   </div>
 
 </div>
+
+{% if client.is_pro %}
+<form action="{% url 'backup-action' schema=client.schema_name %}" method="POST">
+  {% csrf_token %}
+  {{ block.super }}
+  <button class="btn btn-primary" type="submit" name="submit" value="download">{% trans "Download" %}</button>
+  <button class="btn btn-danger" type="submit" name="submit" value="delete">{% trans "Delete" %}</button>
+  <button class="btn btn-danger" type="submit" name="submit" value="restore">{% trans "Restore" %}</button>
+</form>
+{% endif %}
 
 {% endblock %}

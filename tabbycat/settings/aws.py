@@ -165,6 +165,8 @@ EMAIL_USE_TLS = True
 
 SES_WEBHOOK_KEY = os.environ.get('SES_WEBHOOK_KEY', '')
 
+BACKUPS_S3_BUCKET = os.environ.get('BACKUPS_S3_BUCKET', '')
+
 # ==============================================================================
 # Dynamic preferences
 # ==============================================================================
