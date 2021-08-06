@@ -21,7 +21,7 @@ from utils.mixins import AssistantMixin
 from utils.tables import BaseTableBuilder
 from utils.views import PostOnlyRedirectView, VueTableTemplateView
 
-from .forms import InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
+from .forms import BackupInstanceForm, InstanceBackupSelectionForm, InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
 from .models import Client, Instance
 from .utils import get_postgres_url
 
@@ -132,6 +132,63 @@ class ExportInstanceDatabaseView(AssistantMixin, ClientObjectMixin, PostOnlyRedi
 
         response = HttpResponse(content_type='application/sql', content=output)
         response['Content-Disposition'] = "attachment; filename=%s" % (self.create_filename(),)
+        return response
+
+
+class BackupInstanceView(AssistantMixin, ClientObjectMixin, FormView):
+    form_class = BackupInstanceForm
+
+    def get_success_url(self):
+        return reverse('tournament-detail', kwargs={'schema': self.client.schema_name})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['client'] = self.client
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=405)
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Created backup"))
+        return super().form_valid(form)
+
+
+class InstanceBackupsActionView(AssistantMixin, ClientObjectMixin, FormView):
+    form_class = InstanceBackupSelectionForm
+
+    def get_success_url(self):
+        return reverse('tournament-detail', kwargs={'schema': self.client.schema_name})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['backups'] = self.client.backup_set.all()
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=405)
+
+    def form_valid(self, form):
+        return {
+            'delete': self.delete,
+            'restore': self.restore,
+            'download': self.download,
+        }[self.request.POST.get('submit')](form, form.save())
+
+    def delete(self, form, backup):
+        backup.delete()
+        return super().form_valid(form)
+
+    def restore(self, form, backup):
+        backup.restore()
+        return super().form_valid(form)
+
+    def download(self, backup):
+        s3_process = Popen(['aws', 's3', 'cp', backup.uri, '-'], stdout=PIPE)
+        data, errors = s3_process.communicate()
+
+        response = HttpResponse(content_type='application/sql', content=data)
+        response['Content-Disposition'] = "attachment; filename=%s" % (backup.get_filename(),)
         return response
 
 

@@ -44,6 +44,14 @@ urlpatterns = [
             path('exportdb/',
                 views.ExportInstanceDatabaseView.as_view(),
                 name='export-instance-db'),
+            path('backups/', include([
+                path('create/',
+                    views.BackupInstanceView.as_view(),
+                    name='backup-instance'),
+                path('action/',
+                    views.InstanceBackupsActionView.as_view(),
+                    name='backup-action'),
+            ])),
         ])),
     ])),
 
