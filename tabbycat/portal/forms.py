@@ -34,7 +34,6 @@ class InstanceCreationForm(forms.ModelForm):
     timezone = forms.ChoiceField(widget=DatalistWidget, choices=((t, t) for t in common_timezones),
         label=_("Time zone"), help_text=_("IANA time zone to use when showing times"))
     currency = forms.ChoiceField(label=_("Payment currency"),
-        help_text=_("Calico supports payment in USD as well as CAD. The amount is shown in the dropdown."),
         choices=(
             ('cad', _("Canadian Dollar (50CAD)")),
             ('usd', _('United States Dollar (40USD)'))))

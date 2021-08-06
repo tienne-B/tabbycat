@@ -8,6 +8,13 @@ from pytz import common_timezones
 
 
 class Client(TenantMixin):
+    REGULAR_PLAN = 'r'
+    PRO_PLAN = 'p'
+    PLAN_CHOICES = (
+        (REGULAR_PLAN, _("Regular")),
+        (PRO_PLAN, _("Pro")),
+    )
+
     user = models.ForeignKey(get_user_model(), models.PROTECT, blank=True, null=True)
     name = models.CharField(max_length=100,
         verbose_name=_("name"),
@@ -27,6 +34,8 @@ class Client(TenantMixin):
         default='Australia/Melbourne',  # From settings.TIME_ZONE
         verbose_name=_("time zone"))
 
+    plan = models.CharField(max_length=1, choices=PLAN_CHOICES, default=REGULAR_PLAN, verbose_name=_("plan"))
+
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = False
     auto_drop_schema = False
@@ -37,6 +46,10 @@ class Client(TenantMixin):
     @property
     def is_archived(self):
         return self.archive or (self.end_date is not None and self.end_date < date.today())
+
+    @property
+    def is_pro(self):
+        return self.plan == self.PRO_PLAN
 
 
 class Instance(DomainMixin):
