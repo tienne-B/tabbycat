@@ -3363,9 +3363,7 @@ components:
           type: integer
     Debate:
       required:
-        - venue
         - teams
-        - adjudicators
       type: object
       properties:
         url:
@@ -3408,6 +3406,7 @@ components:
         adjudicators:
           title: Adjudicators
           type: object
+          nullable: true
           required:
             - chair
             - panellists
