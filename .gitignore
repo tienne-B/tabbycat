@@ -83,6 +83,9 @@ nosetests.xml
 # Redis
 dump.rdb
 
+# Calico
+.well-known/
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
