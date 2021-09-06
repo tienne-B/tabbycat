@@ -8,6 +8,13 @@ from pytz import common_timezones
 
 
 class Client(TenantMixin):
+    CURRENCIES = (
+        ('aud', _("Australian Dollar (55AUD)")),
+        ('cad', _("Canadian Dollar (50CAD)")),
+        ('eur', _("European Euro (35EUR)")),
+        ('usd', _("United States Dollar (40USD)")),
+    )
+
     user = models.ForeignKey(get_user_model(), models.PROTECT, blank=True, null=True)
     name = models.CharField(max_length=100,
         verbose_name=_("name"),
@@ -17,7 +24,10 @@ class Client(TenantMixin):
     end_date = models.DateField(auto_now_add=False, null=True, verbose_name=_("end date"),
         help_text=_("The end date of the site's event. Tournament creation on the site will be disabled afterwards."))
 
-    paid = models.IntegerField(default=0)  # In CAD cents
+    paid = models.IntegerField(default=0)  # In cents
+    currency = models.CharField(max_length=3, choices=CURRENCIES, verbose_name=_("currency"), default='cad',
+        help_text=_("Calico supports payment in various currencies to avoid conversion fees."))
+
     session_id = models.CharField(max_length=100, null=True, blank=True)
     payment_id = models.CharField(max_length=100, null=True, blank=True)
 
@@ -25,7 +35,8 @@ class Client(TenantMixin):
         max_length=len(max(common_timezones, key=len)),
         choices=((t, t) for t in common_timezones),
         default='Australia/Melbourne',  # From settings.TIME_ZONE
-        verbose_name=_("time zone"))
+        verbose_name=_("time zone"),
+        help_text=_("IANA time zone to use when showing times"))
 
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = False

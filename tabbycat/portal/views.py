@@ -164,7 +164,9 @@ class CreateInstanceFormView(AssistantMixin, FormView):
     def form_valid(self, form):
         self.object = form.save()
         currency_amounts = {
+            'aud': 5500,
             'cad': 5000,
+            'eur': 3500,
             'usd': 4000,
         }
         customer = stripe.Customer.create(email=self.request.user.email)
