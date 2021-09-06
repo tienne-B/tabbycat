@@ -16,10 +16,10 @@ class DomainInline(admin.TabularInline):
 @admin.register(Client)
 class ClientAdmin(TenantAdminMixin, admin.ModelAdmin):
     list_display = ('name', 'schema_name', 'user', 'created_on', 'archive', 'paid')
-    list_editable = ('archive', 'paid')
+    list_editable = ('archive',)
     search_fields = ('schema_name', 'name', 'user__username')
     inlines = (DomainInline,)
-    actions = ['create_schema', 'migrate_schema', 'create_migrate_schema']
+    actions = ['create_schema', 'delete_schema', 'migrate_schema', 'create_migrate_schema']
 
     def create_schema(self, request, queryset):
         for client in queryset:
@@ -33,6 +33,17 @@ class ClientAdmin(TenantAdminMixin, admin.ModelAdmin):
             num_schemas,
         ) % {'count': num_schemas})
     create_schema.short_description = _("Create Schema")
+
+    def delete_schema(self, request, queryset):
+        num_schemas = queryset.count()
+        for client in queryset:
+            client.delete(force_drop=True)
+        self.message_user(request, ngettext_lazy(
+            "%(count)d schema was dropped.",
+            "%(count)d schemas were dropped.",
+            num_schemas,
+        ) % {'count': num_schemas})
+    delete_schema.short_description = _("Drop Schema")
 
     def migrate_schema(self, request, queryset):
         for client in queryset:
