@@ -82,7 +82,7 @@ class PaymentSessionMixin:
 
     payment_methods = {
         'card': lambda currency, country: True,
-        'acss_debit': lambda currency, country: True,
+        'acss_debit': lambda currency, country: currency in ['CAD', 'USD'],
         'wechat_pay': lambda currency, country: currency[:2] == country,
     }
 
@@ -155,6 +155,9 @@ class PaymentSessionMixin:
             payment_intent_data={
                 'application_fee_amount': round(total * self.tournament.fee_rate),
                 'description': "Registration for %s" % (self.tournament.name,),
+                'metadata': {
+                    'application': 'registration',
+                },
             },
             payment_method_options={
                 'acss_debit': {
