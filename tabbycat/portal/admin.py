@@ -5,8 +5,27 @@ from django.core.management import call_command
 from django.db import connection
 from django.utils.translation import gettext_lazy as _, ngettext_lazy
 from django_tenants.admin import TenantAdminMixin
+from django_tenants.utils import get_public_schema_name
 
 from .models import Client, Instance
+
+
+class HideFromTenantsMixin:
+    """
+    Hides public models from tenants
+    """
+
+    def has_add_permission(self, request):
+        return super().has_add_permission(request) and request.tenant.schema_name == get_public_schema_name()
+
+    def has_change_permission(self, request, obj=None):
+        return super().has_change_permission(request, obj) and request.tenant.schema_name == get_public_schema_name()
+
+    def has_delete_permission(self, request, obj=None):
+        return super().has_delete_permission(request, obj) and request.tenant.schema_name == get_public_schema_name()
+
+    def has_view_permission(self, request, obj=None):
+        return super().has_view_permission(request, obj) and request.tenant.schema_name == get_public_schema_name()
 
 
 class DomainInline(admin.TabularInline):
@@ -14,7 +33,7 @@ class DomainInline(admin.TabularInline):
 
 
 @admin.register(Client)
-class ClientAdmin(TenantAdminMixin, admin.ModelAdmin):
+class ClientAdmin(TenantAdminMixin, HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('name', 'schema_name', 'user', 'created_on', 'archive', 'paid')
     list_editable = ('archive',)
     search_fields = ('schema_name', 'name', 'user__username')

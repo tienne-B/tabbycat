@@ -2,24 +2,25 @@ from django.contrib import admin
 from dynamic_preferences.admin import PerInstancePreferenceAdmin
 
 from participants.emoji import pick_unused_emoji
+from portal.admin import HideFromTenantsMixin
 
 from .models import Adjudicator, Institution, Payment, Speaker, SpeakerCategory, Team, Tournament, TournamentPreferenceModel
 
 
 @admin.register(Tournament)
-class TournamentAdmin(admin.ModelAdmin):
+class TournamentAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('name', 'slug', 'manager', 'active', 'date')
     list_select_related = ('manager',)
     ordering = ('date',)
 
 
 @admin.register(TournamentPreferenceModel)
-class TournamentPreferenceAdmin(PerInstancePreferenceAdmin):
+class TournamentPreferenceAdmin(HideFromTenantsMixin, PerInstancePreferenceAdmin):
     pass
 
 
 @admin.register(Institution)
-class InstitutionAdmin(admin.ModelAdmin):
+class InstitutionAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('name', 'code', 'tournament', 'manager')
     list_select_related = ('tournament', 'manager')
     ordering = ('name',)
@@ -27,7 +28,7 @@ class InstitutionAdmin(admin.ModelAdmin):
 
 
 @admin.register(SpeakerCategory)
-class SpeakerCategoryAdmin(admin.ModelAdmin):
+class SpeakerCategoryAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('name', 'slug', 'seq', 'tournament')
     list_filter = ('tournament',)
     ordering = ('tournament', 'seq')
@@ -39,7 +40,7 @@ class SpeakerInline(admin.TabularInline):
 
 
 @admin.register(Team)
-class TeamAdmin(admin.ModelAdmin):
+class TeamAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('long_name', 'short_name', 'emoji', 'institution', 'tournament')
     list_select_related = ('tournament', 'institution')
     search_fields = ('reference', 'short_name', 'institution__name',
@@ -54,7 +55,7 @@ class TeamAdmin(admin.ModelAdmin):
 
 
 @admin.register(Adjudicator)
-class AdjudicatorAdmin(admin.ModelAdmin):
+class AdjudicatorAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('name', 'institution', 'tournament', 'independent')
     search_fields = ('name', 'tournament__name', 'institution__name', 'institution__code')
     list_filter = ('tournament', 'institution')
@@ -62,7 +63,7 @@ class AdjudicatorAdmin(admin.ModelAdmin):
 
 
 @admin.register(Payment)
-class PaymentAdmin(admin.ModelAdmin):
+class PaymentAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_display = ('payment_intent', 'tournament', 'institution', 'status', 'amount_paid', 'paid_on')
     list_select_related = ('tournament', 'institution')
     search_fields = ('payment_intent',)
