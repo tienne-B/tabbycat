@@ -1,0 +1,19 @@
+{% extends "tables/base_vue_table.html" %}
+{% load i18n debate_tags %}
+
+{% block nav %}{% include "nav/reg_base_nav.html" %}{% endblock %}
+
+{% block content %}
+
+{{ block.super }}
+
+<form action="." method="POST">
+  <div class="card">
+    <div class="card-body row">
+      {% csrf_token %}
+      <button type="submit" name="continue" class="btn btn-block btn-primary mb-3">{% trans "Go to checkout" %}</button>
+    </div>
+  </div>
+</form>
+
+{% endblock %}

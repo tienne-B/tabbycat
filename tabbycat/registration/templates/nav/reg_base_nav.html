@@ -1,0 +1,57 @@
+{% load debate_tags static i18n %}
+
+<nav class="navbar navbar-expand-lg navbar-light">
+
+  {# Decisions about whether to show items in the menu are based on the role of the user (not the view). #}
+  {% blocktrans trimmed asvar logo_alt %}
+    Tabbycat Logo
+  {% endblocktrans %}
+  <div class="nav-item">
+
+    {% if tournament %}
+      <a class="navbar-brand" href="{{ tournament.get_public_url  }}">
+        {% include "nav/logo.html" with width=33 height=33  alt=logo_alt %}
+        {{ tournament }}
+      </a>
+    {% else %}
+      <a class="navbar-brand" href="/">
+        {% include "nav/logo.html" with width=33 height=33 alt=logo_alt %}
+        Tabbycat
+      </a>
+    {% endif %}
+
+  </div>
+
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsed-main-nav" aria-controls="collapsed-main-nav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse pt-3 pt-md-0 pb-2 pb-md-0" id="collapsed-main-nav">
+
+    <ul class="navbar-nav mr-auto">
+
+      {% if tournament.manager == request.user %}
+        {% include "nav/manager_registration_nav.html" %}
+      {% else %}
+        {% include "nav/public_registration_nav.html" %}
+      {% endif %}
+
+    </ul>
+
+    <ul class="navbar-nav navbar-my-lg-0">
+      <li class="nav-item">
+        {% if user.is_authenticated %}
+          <a class="nav-link" href="{% url 'logout' %}">
+            {% trans "Log Out" %} ({{ user }})
+          </a>
+        {% else %}
+          <a class="nav-link" href="{% url 'login' %}">
+            {% trans "Login" %}
+          </a>
+        {% endif %}
+      </li>
+    </ul>
+
+  </div>
+
+</nav>

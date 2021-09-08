@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load debate_tags i18n %}
+
+{% block head-title %}<span class="emoji">👋</span>
+{% blocktrans trimmed with tournament=tournament.name %}
+    Welcome to {{ tournament }}
+{% endblocktrans %}{% endblock %}
+{% block page-title %}
+  {% blocktrans trimmed with tournament=tournament.name %}
+    Welcome to {{ tournament }}
+  {% endblocktrans %}
+{% endblock %}
+
+{% block page-alerts %}{% endblock %}
+{% block nav %}{% include "nav/reg_base_nav.html" %}{% endblock %}
+
+{% block content %}
+
+  {% if pref.welcome_message %}
+    <div class="card">
+      <div class="card-body pb-0">
+        {{ pref.welcome_message|safe }}
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="list-group mt-2">
+
+    {% if pref.enable_institutions %}
+      {% trans "Register Institution" as text %}
+      {% tournamenturl 'register-institution' as url %}
+      {% include "components/item-action.html" with icon="corner-up-right" %}
+    {% endif %}
+
+    {% if pref.enable_teams %}
+      {% trans "Register Team" as text %}
+      {% tournamenturl 'register-team' as url %}
+      {% include "components/item-action.html" with icon="sun" %}
+    {% endif %}
+
+    {% if pref.enable_adjs %}
+      {% trans "Register Adjudicator" as text %}
+      {% tournamenturl 'register-adjudicator' as url %}
+      {% include "components/item-action.html" with icon="file-text" %}
+    {% endif %}
+
+  </div>
+
+  {% if tournament.manager == request.user %}
+    <div class="list-group mt-2">
+
+      {% trans "Registration Statuses" as text %}
+      {% tournamenturl 'admin-registration-list' as url %}
+      {% include "components/item-action.html" with icon="book-open" %}
+
+      {% trans "Institution Requests" as text %}
+      {% tournamenturl 'admin-institutions-list' as url %}
+      {% include "components/item-action.html" with icon="home" %}
+
+      {% trans "Preferences" as text %}
+      {% tournamenturl 'admin-preferences' as url %}
+      {% include "components/item-action.html" with icon="settings" %}
+
+    </div>
+
+    {% if not tournament.connected_account %}
+      <div class="list-group mt-2">
+        <form action="{% tournamenturl 'stripe-connect-account' %}" method="POST">
+          {% csrf_token %}
+          <button type="submit" name="continue" class="btn btn-block btn-primary mb-3">{% trans "Connect Stripe" %}</button>
+        </form>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if pref.tournament_staff %}
+    <div class="card mt-3">
+      <div class="card-header h6">
+        {% trans "Tournament Staff" %}
+      </div>
+      <div class="card-body">
+        {{ pref.tournament_staff|safe }}
+      </div>
+    </div>
+  {% endif %}
+
+{% endblock content %}

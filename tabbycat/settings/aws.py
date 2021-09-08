@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'polymorphic',
     'rest_framework',
     'rest_framework.authtoken',
+    'registration',
 )
 
 SHARED_APPS = (
@@ -122,6 +123,7 @@ SHARED_APPS = (
     'polymorphic',
     'rest_framework',
     'rest_framework.authtoken',
+    'registration',
 )
 
 TENANT_APPS = (

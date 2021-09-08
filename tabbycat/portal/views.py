@@ -17,12 +17,15 @@ from django.views.generic.edit import FormView
 from django_tenants.utils import schema_context
 
 from notifications.models import EmailStatus, SentMessage
+from registration.models import Payment
+from registration.utils import payment_webhook_received
 from utils.mixins import AssistantMixin
 from utils.tables import BaseTableBuilder
 from utils.views import PostOnlyRedirectView, VueTableTemplateView
 
 from .forms import InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
 from .models import Client, Instance
+from .utils import on_payment_deny, on_payment_success
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -177,6 +180,7 @@ class CreateInstanceFormView(AssistantMixin, FormView):
             customer=customer['id'],
             metadata={
                 "product": "Calico Site",
+                "application": "portal",
                 "name": self.object.name,
                 "slug": self.object.schema_name,
                 "timezone": self.object.timezone,
@@ -223,34 +227,34 @@ class StripeWebhookView(View):
         except stripe.error.SignatureVerificationError:  # Invalid signature
             return HttpResponse(status=400)
 
-        try:
-            self.client = Client.objects.get(payment_id=event['data']['object']['id'])
-        except Client.DoesNotExist:
-            return HttpResponse(status=204)
+        args = []
+        application = event['data']['object']['metadata'].get('application', 'portal')
+        if application == 'portal':
+            actions = {
+                'payment_intent.succeeded': on_payment_success,
+                'payment_intent.canceled': on_payment_deny,
+                'payment_intent.payment_failed': on_payment_deny,
+            }
+            try:
+                args.append(Client.objects.get(payment_id=event['data']['object']['id']))
+            except Client.DoesNotExist:
+                return HttpResponse(status=204)
+        elif application == 'registration':
+            actions = {
+                'payment_intent.succeeded': payment_webhook_received,
+                'payment_intent.canceled': payment_webhook_received,
+                'payment_intent.payment_failed': payment_webhook_received,
+            }
+            try:
+                args.append(Payment.objects.get(payment_intent=event['data']['object']['id']))
+            except Payment.DoesNotExist:
+                return HttpResponse(status=204)
 
-        actions = {
-            'payment_intent.succeeded': self.on_payment_success,
-            'payment_intent.canceled': self.on_payment_deny,
-            'payment_intent.payment_failed': self.on_payment_deny,
-        }
+        args.append(event['data']['object'])
         if event['type'] in actions:
-            actions[event['type']](event['data']['object'])
+            actions[event['type']](*args)
 
         return HttpResponse(status=200)
-
-    def on_payment_success(self, payment):
-        self.client.paid = payment.get('amount', 0)
-        self.client.save()
-
-        # Add domain
-        main_instance = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
-        domains = [Instance(tenant=self.client, domain=self.client.schema_name + "." + main_instance, is_primary=True)]
-        if not self.client.schema_name.islower():
-            domains.append(Instance(tenant=self.client, domain=self.client.schema_name.lower() + "." + main_instance, is_primary=False))
-        Instance.objects.bulk_create(domains, ignore_conflicts=True)
-
-    def on_payment_deny(self, payment):
-        self.client.delete(force_drop=not self.client.domains.exists())
 
 
 class SESWebhookView(View):

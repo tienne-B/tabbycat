@@ -47,6 +47,8 @@ urlpatterns = [
         ])),
     ])),
 
+    path('registration/', include('registration.urls')),
+
     path('stripe/', include([
         path('webhook/',
             views.StripeWebhookView.as_view(),

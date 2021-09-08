@@ -13,7 +13,7 @@ class DebateMiddleware(object):
         return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if 'tournament_slug' in view_kwargs and request.path.split('/')[1] != 'api':
+        if 'tournament_slug' in view_kwargs and request.path.split('/')[1] not in ['api', 'reg']:
             cached_key = "%s_%s_%s" % (request.tenant.schema_name, view_kwargs['tournament_slug'], 'object')
             cached_tournament_object = cache.get(cached_key)
 

@@ -1,0 +1,18 @@
+{% extends "tables/base_vue_table.html" %}
+{% load static debate_tags i18n add_field_css %}
+
+{% block content %}
+
+<form action="." method="POST">
+  {{ block.super }}
+
+  {% if pref.require_slots %}
+  <div class="card">
+    <div class="card-body row">
+      {% csrf_token %}
+      <button type="submit" name="continue" class="btn btn-block btn-primary mb-3">{% trans "Save allocations" %}</button>
+    </div>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}

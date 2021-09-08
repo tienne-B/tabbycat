@@ -1,0 +1,15 @@
+{% extends "base_form.html" %}
+{% load reg_tags i18n %}
+
+{% block content %}
+{% blocktrans trimmed asvar form_text with name=object.name amount=fee|currency currency=pref.currency role=role %}
+The button below leads to the checkout. The registration fee for you, {{ name }} ({{ role }}) is {{ amount }} {{ currency }}.
+{% endblocktrans %}
+
+{% if paid %}
+{% blocktrans trimmed asvar explain_text %}
+Your team or institution seem to have already paid your registration fee.
+{% endblocktrans %}
+{% endif %}
+{{ block.super }}
+{% endblock %}
