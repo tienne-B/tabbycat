@@ -1,0 +1,18 @@
+{% extends "preferences_section_set.html" %}
+{% load add_field_css debate_tags i18n %}
+
+{% block nav %}{% endblock %}
+
+{% block page-title %}{% trans "Registration Configuration" %}{% endblock %}
+{% block head-title %}<span class="emoji">🔧</span>
+  {% blocktrans trimmed %}Edit Configuration{% endblocktrans %}
+{% endblock %}
+
+{% block page-subnav-sections %}
+
+  <a class="btn btn-outline-primary"
+     href="{% tournamenturl 'tournament-home' %}">
+    <i data-feather="chevron-left"></i> {% trans "Back to Home page" %}
+  </a>
+
+{% endblock %}
