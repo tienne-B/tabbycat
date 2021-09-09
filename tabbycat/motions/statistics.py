@@ -1,3 +1,9 @@
+"""
+Note: This file is modified for Calico to avoid using the DISTINCT keyword, as
+the cost of the query makes the database unstable. All modifications can be
+discarded with Tabbycat 2.6 as the inefficiency is fixed.
+"""
+
 import itertools
 
 from django.db.models import Avg, Count, Q
@@ -6,6 +12,12 @@ from django.utils.translation import gettext_lazy
 
 from motions.models import Motion
 from tournaments.models import Round
+
+
+def _annotate_annotations(dict_motions, queryset, fields):
+    for item in queryset:
+        for field in fields:
+            setattr(dict_motions[item.pk], field, getattr(item, field))
 
 
 def MotionStatistics(tournament, *args, **kwargs):  # noqa: N802
@@ -36,39 +48,55 @@ class MotionTwoTeamStatsCalculator:
 
     def _prefetch_motions(self):
 
-        self.motions = Motion.objects.filter(round__tournament=self.tournament).order_by(
+        motions = Motion.objects.filter(round__tournament=self.tournament).order_by(
             'round__seq').select_related('round').filter(round__debate__ballotsubmission__confirmed=True)
-        annotations = {}  # dict of keyword arguments to pass to .annotate()
+        self.dict_motions = {m.id: m for m in motions}
 
         # This if-else block could be simplified using **kwargs notation, but it'd be miserable to read
         if self.by_motion:
-            self.motions = self.motions.filter(round__debate__ballotsubmission__confirmed=True)
-            annotations['ndebates'] = Count('ballotsubmission', distinct=True)
-            annotations.update({'%s_wins' % side: Count(
+            motions = Motion.objects.filter(
+                pk__in=self.dict_motions.keys(),
+            ).annotate(ndebates=Count('ballotsubmission', filter=Q(ballotsubmission__confirmed=True)))
+            _annotate_annotations(self.dict_motions, motions, ('ndebates',))
+
+            motions = Motion.objects.filter(
+                pk__in=self.dict_motions.keys(),
+            ).annotate(**{'%s_wins' % side: Count(
                 'ballotsubmission__teamscore',
                 filter=Q(
+                    ballotsubmission__confirmed=True,
                     ballotsubmission__teamscore__debate_team__side=side,
                     ballotsubmission__teamscore__win=True,
-                ), distinct=True) for side in self.tournament.sides})
+                )) for side in self.tournament.sides})
+            _annotate_annotations(self.dict_motions, motions, ['%s_wins' % side for side in self.tournament.sides])
         else:
-            annotations['ndebates'] = Count('round__debate__ballotsubmission', distinct=True)
-            annotations.update({'%s_wins' % side: Count(
+            motions = Motion.objects.filter(
+                pk__in=self.dict_motions.keys(),
+            ).annotate(ndebates=Count('round__debate__ballotsubmission', filter=Q(round__debate__ballotsubmission__confirmed=True)))
+            _annotate_annotations(self.dict_motions, motions, ('ndebates',))
+
+            motions = Motion.objects.filter(
+                pk__in=self.dict_motions.keys(),
+            ).annotate(**{'%s_wins' % side: Count(
                 'round__debate__ballotsubmission__teamscore',
                 filter=Q(
+                    round__debate__ballotsubmission__confirmed=True,
                     round__debate__ballotsubmission__teamscore__debate_team__side=side,
                     round__debate__ballotsubmission__teamscore__win=True,
-                ), distinct=True) for side in self.tournament.sides})
+                )) for side in self.tournament.sides})
+            _annotate_annotations(self.dict_motions, motions, ['%s_wins' % side for side in self.tournament.sides])
 
         if self.include_vetoes:
-            annotations.update({'%s_vetoes' % side: Count(
+            motions = Motion.objects.filter(pk__in=self.dict_motions.keys()).annotate(**{'%s_vetoes' % side: Count(
                 'debateteammotionpreference',
                 filter=Q(
                     debateteammotionpreference__debate_team__side=side,
                     debateteammotionpreference__preference=3,
                     debateteammotionpreference__ballot_submission__confirmed=True,
-                ), distinct=True) for side in self.tournament.sides})
+                )) for side in self.tournament.sides})
+            _annotate_annotations(self.dict_motions, motions, ['%s_vetoes' % side for side in self.tournament.sides])
 
-        self.motions = self.motions.annotate(**annotations)
+        self.motions = self.dict_motions.values()
 
     def _annotate_percentages(self, motion):
         ndebates_in_round = self.ndebates_by_round[motion.round]
@@ -157,29 +185,39 @@ class MotionBPStatsCalculator:
         per round. We'll implement motion selection if and when we discover that
         it's used by someone with BP."""
 
-        self.prelim_motions = Motion.objects.filter(
+        motions = Motion.objects.filter(
             round__tournament=self.tournament,
             round__stage=Round.STAGE_PRELIMINARY,
             round__debate__ballotsubmission__confirmed=True,
         ).order_by('round__seq').select_related('round')
+        self.dict_motions = {m.id: m for m in motions}
 
-        annotations = {}  # dict of keyword arguments to pass to .annotate()
-        annotations['ndebates'] = Count('round__debate__ballotsubmission', distinct=True)
+        motions = Motion.objects.filter(
+            pk__in=self.dict_motions.keys(),
+        ).annotate(ndebates=Count('round__debate__ballotsubmission', filter=Q(round__debate__ballotsubmission__confirmed=True)))
+        _annotate_annotations(self.dict_motions, motions, ('ndebates',))
 
-        annotations.update({'%s_average' % side: Avg(
+        motions = Motion.objects.filter(
+            pk__in=self.dict_motions.keys(),
+        ).annotate(**{'%s_average' % side: Avg(
             'round__debate__ballotsubmission__teamscore__points',
             filter=Q(round__debate__ballotsubmission__teamscore__debate_team__side=side),
         ) for side in self.tournament.sides})
+        _annotate_annotations(self.dict_motions, motions, ['%s_average' % side for side in self.tournament.sides])
 
-        annotations.update({'%s_%d_count' % (side, points): Count(
+        motions = Motion.objects.filter(
+            pk__in=self.dict_motions.keys(),
+        ).annotate(**{'%s_%d_count' % (side, points): Count(
             'round__debate__ballotsubmission__teamscore',
             filter=Q(
                 round__debate__ballotsubmission__teamscore__debate_team__side=side,
                 round__debate__ballotsubmission__teamscore__points=points,
             ),
         ) for side in self.tournament.sides for points in range(4)})
+        _annotate_annotations(self.dict_motions, motions, ['%s_%d_count' % (side, points)
+            for side in self.tournament.sides for points in range(4)])
 
-        self.prelim_motions = self.prelim_motions.annotate(**annotations)
+        self.prelim_motions = self.dict_motions.values()
 
     def _collate_prelim_motion_annotations(self):
         """Collect annotations (which will be attributes) and convert them to
@@ -223,16 +261,21 @@ class MotionBPStatsCalculator:
         per round. We'll implement motion selection if and when we discover that
         it's used by someone with BP."""
 
-        self.elim_motions = Motion.objects.filter(
+        motions = Motion.objects.filter(
             round__tournament=self.tournament,
             round__stage=Round.STAGE_ELIMINATION,
             round__debate__ballotsubmission__confirmed=True,
         ).order_by('round__seq').select_related('round')
+        self.dict_motions = {m.id: m for m in motions}
 
-        annotations = {}  # dict of keyword arguments to pass to .annotate()
-        annotations['ndebates'] = Count('round__debate__ballotsubmission', distinct=True)
+        motions = Motion.objects.filter(
+            pk__in=self.dict_motions.keys(),
+        ).annotate(ndebates=Count('round__debate__ballotsubmission', filter=Q(round__debate__ballotsubmission__confirmed=True)))
+        _annotate_annotations(self.dict_motions, motions, ('ndebates',))
 
-        annotations.update({'%s_%s' % (side, status): Count(
+        motions = Motion.objects.filter(
+            pk__in=self.dict_motions.keys(),
+        ).annotate(**{'%s_%s' % (side, status): Count(
             'round__debate__ballotsubmission__teamscore',
             filter=Q(
                 round__debate__ballotsubmission__teamscore__debate_team__side=side,
@@ -241,8 +284,10 @@ class MotionBPStatsCalculator:
             for side in self.tournament.sides
             for (status, value) in [("advancing", True), ("eliminated", False)]
         })
+        _annotate_annotations(self.dict_motions, motions, ['%s_%s' % (side, status)
+            for side in self.tournament.sides for (status, value) in [("advancing", True), ("eliminated", False)]])
 
-        self.elim_motions = self.elim_motions.annotate(**annotations)
+        self.elim_motions = self.dict_motions.values()
 
     def _collate_elim_motion_annotations(self):
         """Collect annotations (which will be attributes) and convert them to
