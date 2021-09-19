@@ -96,7 +96,7 @@ class Backup(models.Model):
         return "%s%s/%s" % (settings.BACKUPS_S3_BUCKET, self.client.schema_name, self.filename)
 
     def save(self):
-        if self.filename is None:
+        if self.filename is None or self.filename == '':
             self.filename = '%d.dump.gz' % (int(timezone.now().timestamp()))
 
         file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)

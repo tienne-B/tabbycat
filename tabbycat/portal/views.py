@@ -203,12 +203,12 @@ class InstanceBackupsActionView(AssistantMixin, ClientObjectMixin, FormView):
         backup.restore()
         return super().form_valid(form)
 
-    def download(self, backup):
+    def download(self, form, backup):
         s3_process = Popen(['aws', 's3', 'cp', backup.uri, '-'], stdout=PIPE)
         data, errors = s3_process.communicate()
 
         response = HttpResponse(content_type='application/sql', content=data)
-        response['Content-Disposition'] = "attachment; filename=%s" % (backup.get_filename(),)
+        response['Content-Disposition'] = "attachment; filename=%s" % (backup.filename,)
         return response
 
 
