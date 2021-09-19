@@ -101,7 +101,7 @@ class Backup(models.Model):
 
         file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
         if len(file_exists.communicate()[0]) == 0:  # File does not exist (yet)
-            pg_process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-a', '-O', '-x', '-F', 't'], stdout=PIPE)
+            pg_process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-O', '-x', '-Fc'], stdout=PIPE)
             s3_process = Popen(['aws', 's3', 'cp', '-', self.uri], stdin=pg_process.stdout, stdout=PIPE)
             pg_process.stdout.close()
             output, errors = s3_process.communicate()
@@ -123,8 +123,8 @@ class Backup(models.Model):
         new_backup.save()
 
         s3_process = Popen(['aws', 's3', 'cp', self.uri, '-'], stdout=PIPE)
-        pg_process = Popen(['pg_restore',
-            get_postgres_url(), '-c', '-n', self.client.schema_name, '-a', '-O', '-x', '-F', 't'], stdin=s3_process.stdout, stdout=PIPE)
+        pg_process = Popen(['pg_restore', '-d', get_postgres_url(),
+            '-c', '--if-exists', '-n', self.client.schema_name, '-O', '-x'], stdin=s3_process.stdout, stdout=PIPE)
         s3_process.stdout.close()
         output, errors = pg_process.communicate()
 
