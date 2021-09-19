@@ -9,8 +9,7 @@ from .models import Adjudicator, Institution, Payment, Speaker, SpeakerCategory,
 
 @admin.register(Tournament)
 class TournamentAdmin(HideFromTenantsMixin, admin.ModelAdmin):
-    list_display = ('name', 'slug', 'manager', 'active', 'date')
-    list_select_related = ('manager',)
+    list_display = ('name', 'slug', 'active', 'date')
     ordering = ('date',)
 
 

@@ -31,7 +31,7 @@ class Tournament(models.Model):
     connected_account = models.CharField(max_length=50, blank=True, null=True, verbose_name=_("connected account"))
     fee_rate = models.FloatField(default=0.03, verbose_name=_("fee percentage"))
 
-    manager = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, verbose_name=_("manager"))
+    managers = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name=_("managers"))
 
     class Meta:
         verbose_name = _('tournament')

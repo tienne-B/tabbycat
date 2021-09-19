@@ -63,7 +63,6 @@ class CreateTournamentFromURL(forms.ModelForm):
 
     def save(self, commit=True):
         tournament = super().save(commit=False)
-        tournament.manager = self.request.user
 
         api_result = requests.get(self.cleaned_data['external_url']).json()
         tournament.name = api_result['name']
@@ -74,6 +73,7 @@ class CreateTournamentFromURL(forms.ModelForm):
 
         if commit:
             tournament.save()
+            tournament.managers.add(self.request.user)
         return tournament
 
 
