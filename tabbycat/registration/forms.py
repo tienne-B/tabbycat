@@ -6,7 +6,7 @@ import requests
 from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
-from dynamic_preferences.forms import PreferenceForm
+from dynamic_preferences.forms import preference_form_builder, PreferenceForm
 
 from portal.forms import CalendarDateInputWidget
 
@@ -19,7 +19,7 @@ class TournamentPreferenceForm(PreferenceForm):
 
 
 def tournament_preference_form_builder(instance, preferences=[], **kwargs):
-    return None  # preference_form_builder(TournamentPreferenceForm, preferences, model={'instance': instance}, **kwargs)
+    return preference_form_builder(TournamentPreferenceForm, preferences, model={'instance': instance}, **kwargs)
 
 
 def create_url_key(tournament, name):
@@ -63,7 +63,6 @@ class CreateTournamentFromURL(forms.ModelForm):
 
     def save(self, commit=True):
         tournament = super().save(commit=False)
-        tournament.manager = self.request.user
 
         api_result = requests.get(self.cleaned_data['external_url']).json()
         tournament.name = api_result['name']
@@ -74,6 +73,7 @@ class CreateTournamentFromURL(forms.ModelForm):
 
         if commit:
             tournament.save()
+            tournament.managers.add(self.request.user)
         return tournament
 
 

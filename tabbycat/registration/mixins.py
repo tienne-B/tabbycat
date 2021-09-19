@@ -54,7 +54,7 @@ class AdminMixin(TournamentMixin, UserPassesTestMixin, ContextMixin):
         return super().get_context_data(**kwargs)
 
     def test_func(self):
-        return self.tournament.manager == self.request.user
+        return self.tournament.managers.filter(user_id=self.request.user.id).exists()
 
 
 class InstitutionMixin(TournamentMixin, UserPassesTestMixin, ContextMixin):
