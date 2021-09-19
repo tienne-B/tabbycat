@@ -40,6 +40,7 @@ class Client(TenantMixin):
         verbose_name=_("time zone"))
 
     plan = models.CharField(max_length=1, choices=PLAN_CHOICES, default=REGULAR_PLAN, verbose_name=_("plan"))
+    number_tournaments = models.PositiveIntegerField(default=1, verbose_name=_("number of tournaments"))
 
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = False
