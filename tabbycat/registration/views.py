@@ -18,7 +18,7 @@ from utils.tables import BaseTableBuilder
 from utils.views import ModelFormSetView, PostOnlyRedirectView, VueTableTemplateView
 
 from .forms import (AdjudicatorDetailsForm, CreateInstitutionForm, CreateTournamentFromURL,
-    InstitutionApproveForm, TeamDetailsForm, TournamentPreferenceForm)
+    InstitutionApproveForm, TeamDetailsForm, tournament_preference_form_builder)
 from .mixins import AdminMixin, InstitutionMixin, PaymentSessionMixin, RegistrationFormTitlesMixin, TournamentMixin
 from .models import Adjudicator, Discount, Institution, Payment, Person, SpeakerCategory, Team, Tournament
 from .preferences import AdjudicatorsPerTeamRule
@@ -70,7 +70,6 @@ class PublicTournamentIndexView(TournamentMixin, TemplateView):
 class AdminPreferencesView(AdminMixin, TournamentMixin, PreferenceFormView):
     registry = tournament_preferences_registry
     template_name = "preferences_set.html"
-    form_class = TournamentPreferenceForm
 
     def form_valid(self, *args, **kwargs):
         messages.success(self.request, _("Tournament options saved."))
@@ -78,6 +77,9 @@ class AdminPreferencesView(AdminMixin, TournamentMixin, PreferenceFormView):
 
     def get_success_url(self):
         return reverse_tournament('tournament-home', self.tournament)
+
+    def get_form_class(self, *args, **kwargs):
+        return tournament_preference_form_builder(instance=self.tournament, section=None)
 
 
 class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateView):
