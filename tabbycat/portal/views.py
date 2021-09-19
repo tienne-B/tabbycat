@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _, gettext_lazy
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import FormMixin, FormView
+from django.views.generic.edit import CreateView, FormMixin, FormView
 from django_tenants.utils import schema_context
 
 from notifications.models import EmailStatus, SentMessage
@@ -155,7 +155,7 @@ class ExportInstanceDatabaseView(AssistantMixin, ClientObjectMixin, PostOnlyRedi
         return response
 
 
-class BackupInstanceView(AssistantMixin, ClientObjectMixin, FormView):
+class BackupInstanceView(AssistantMixin, ClientObjectMixin, CreateView):
     form_class = BackupInstanceForm
 
     def get_success_url(self):

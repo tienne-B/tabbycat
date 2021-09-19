@@ -93,14 +93,12 @@ class Backup(models.Model):
 
     @property
     def uri(self):
-        return "%s%s/%s" % (settings.BACKUPS_S3_BUCKET, self.client.schema_name, self.get_filename())
-
-    def get_filename(self):
-        if self.filename is None:
-            self.filename = '%d.dump.gz' % (int(timezone.now().timestamp()))
-        return self.filename
+        return "%s%s/%s" % (settings.BACKUPS_S3_BUCKET, self.client.schema_name, self.filename)
 
     def save(self):
+        if self.filename is None:
+            self.filename = '%d.dump.gz' % (int(timezone.now().timestamp()))
+
         file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
         if len(file_exists.communicate()[0]) == 0:  # File does not exist (yet)
             pg_process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-a', '-O', '-x', '-F', 't'], stdout=PIPE)
