@@ -91,7 +91,7 @@ class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateVie
     def get_adjs_table(self):
         table = BaseTableBuilder(view=self, title=_("Adjudicators"))
         qs = Adjudicator.objects.filter(tournament=self.tournament).select_related('institution').annotate(paid=Exists(
-            Payment.adjudicators_paid.through.objects.filter(status=Payment.STATUS_SUCCEEDED, adjudicators_paid=OuterRef('id'))))
+            Payment.adjudicators_paid.through.objects.filter(payment__status=Payment.STATUS_SUCCEEDED, adjudicator_id=OuterRef('id'))))
 
         table.add_column({'key': 'name', 'title': _("Name")}, [adj.name for adj in qs])
         self.add_column({
@@ -116,7 +116,7 @@ class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateVie
     def get_teams_table(self):
         table = BaseTableBuilder(view=self, title=_("Teams"))
         qs = Team.objects.filter(tournament=self.tournament).select_related('institution').annotate(paid=Exists(
-            Payment.teams_paid.through.objects.filter(status=Payment.STATUS_SUCCEEDED, adjudicators_paid=OuterRef('id'))))
+            Payment.teams_paid.through.objects.filter(payment__status=Payment.STATUS_SUCCEEDED, team_id=OuterRef('id'))))
 
         table.add_column({'key': 'name', 'title': _("Name")}, [team.short_name for team in qs])
         self.add_column({
@@ -348,7 +348,7 @@ class AdminInstitutionDetailView(AdminMixin, TemplateView):
     pass
 
 
-class CreateTeamView(TournamentMixin, RegistrationFormTitlesMixin, FormView):
+class CreateTeamView(AssistantMixin, TournamentMixin, RegistrationFormTitlesMixin, FormView):
     form_title = gettext_lazy("Team Registration")
     submit_title = gettext_lazy("Add Team")
 
@@ -365,7 +365,7 @@ class CreateTeamView(TournamentMixin, RegistrationFormTitlesMixin, FormView):
         return kwargs
 
 
-class CreateAdjudicatorView(TournamentMixin, RegistrationFormTitlesMixin, CreateView):
+class CreateAdjudicatorView(AssistantMixin, TournamentMixin, RegistrationFormTitlesMixin, CreateView):
     form_title = gettext_lazy("Adjudicator Registration")
     submit_title = gettext_lazy("Add Adjudicator")
 
