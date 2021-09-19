@@ -64,7 +64,7 @@ class PublicTournamentIndexView(TournamentMixin, TemplateView):
     def get_context_data(self, **kwargs):
         if not self.request.user.is_anonymous:
             kwargs['own_institutions'] = Institution.objects.filter(tournament=self.tournament, manager=self.request.user)
-            kwargs['is_manager'] = self.tournament.managers.filter(user=self.request.user).exists()
+            kwargs['is_manager'] = self.tournament.managers.filter(id=self.request.user.id).exists()
             kwargs['own_adjs'] = self.tournament.adjudicator_set.filter(
                 manager=self.request.user).exclude(payment__status=Payment.STATUS_SUCCEEDED)
             kwargs['own_teams'] = self.tournament.team_set.filter(
@@ -88,6 +88,7 @@ class AdminPreferencesView(AdminMixin, TournamentMixin, PreferenceFormView):
 
 
 class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateView):
+    template_name = "reg_base_vue_table.html"
     page_title = gettext_lazy("Participants")
 
     def get_tables(self):
@@ -99,19 +100,19 @@ class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateVie
             Payment.adjudicators_paid.through.objects.filter(payment__status=Payment.STATUS_SUCCEEDED, adjudicator_id=OuterRef('id'))))
 
         table.add_column({'key': 'name', 'title': _("Name")}, [adj.name for adj in qs])
-        self.add_column({
+        table.add_column({
             'key': "institution",
             'icon': 'home',
             'tooltip': _("Institution"),
         }, [adj.institution.code if adj.institution else _("-") for adj in qs])
 
-        self.add_boolean_column({
+        table.add_boolean_column({
             'key': 'independent',
             'tooltip': _("Independent Adjudicator"),
             'icon': 'user-plus',
         }, [adj.independent for adj in qs])
 
-        self.add_boolean_column({
+        table.add_boolean_column({
             'key': 'paid',
             'tooltip': _("Paid?"),
             'icon': 'credit-card',
@@ -124,13 +125,13 @@ class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateVie
             Payment.teams_paid.through.objects.filter(payment__status=Payment.STATUS_SUCCEEDED, team_id=OuterRef('id'))))
 
         table.add_column({'key': 'name', 'title': _("Name")}, [team.short_name for team in qs])
-        self.add_column({
+        table.add_column({
             'key': "institution",
             'icon': 'home',
             'tooltip': _("Institution"),
         }, [team.institution.name if team.institution else _("-") for team in qs])
 
-        self.add_boolean_column({
+        table.add_boolean_column({
             'key': 'paid',
             'tooltip': _("Paid?"),
             'icon': 'credit-card',

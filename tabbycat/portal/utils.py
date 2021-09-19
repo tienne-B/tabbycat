@@ -1,8 +1,6 @@
 from django.conf import settings
 from django_tenants.utils import schema_context
 
-from .models import Instance
-
 
 def using_tenant_schema(func):
     def switch_schema(*args, **kwargs):
@@ -25,6 +23,7 @@ def ws_using_tenant_schema(func):
 # Payment webhook methods
 
 def on_payment_success(client, payment):
+    from .models import Instance
     client.paid = payment.get('amount', 0)
     client.save()
 

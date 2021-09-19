@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('portal', '0003_client_end_date'),
+        ('portal', '0004_auto_20210906_1729'),
     ]
 
     operations = [
