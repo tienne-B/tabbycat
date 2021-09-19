@@ -64,6 +64,11 @@ class PublicTournamentIndexView(TournamentMixin, TemplateView):
     def get_context_data(self, **kwargs):
         if not self.request.user.is_anonymous:
             kwargs['own_institutions'] = Institution.objects.filter(tournament=self.tournament, manager=self.request.user)
+            kwargs['is_manager'] = self.tournament.managers.filter(user=self.request.user).exists()
+            kwargs['own_adjs'] = self.tournament.adjudicator_set.filter(
+                manager=self.request.user).exclude(payment__status=Payment.STATUS_SUCCEEDED)
+            kwargs['own_teams'] = self.tournament.team_set.filter(
+                manager=self.request.user).exclude(payment__status=Payment.STATUS_SUCCEEDED)
         return super().get_context_data(**kwargs)
 
 
