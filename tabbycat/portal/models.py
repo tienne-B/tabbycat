@@ -1,10 +1,15 @@
 from datetime import date
+from subprocess import PIPE, Popen
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_tenants.models import DomainMixin, TenantMixin
 from pytz import common_timezones
+
+from .utils import get_postgres_url
 
 
 class Client(TenantMixin):
@@ -13,6 +18,13 @@ class Client(TenantMixin):
         ('cad', _("Canadian Dollar (50CAD)")),
         ('eur', _("European Euro (35EUR)")),
         ('usd', _("United States Dollar (40USD)")),
+    )
+
+    REGULAR_PLAN = 'r'
+    PRO_PLAN = 'p'
+    PLAN_CHOICES = (
+        (REGULAR_PLAN, _("Regular")),
+        (PRO_PLAN, _("Pro")),
     )
 
     user = models.ForeignKey(get_user_model(), models.PROTECT, blank=True, null=True)
@@ -38,6 +50,9 @@ class Client(TenantMixin):
         verbose_name=_("time zone"),
         help_text=_("IANA time zone to use when showing times"))
 
+    plan = models.CharField(max_length=1, choices=PLAN_CHOICES, default=REGULAR_PLAN, verbose_name=_("plan"))
+    number_tournaments = models.PositiveIntegerField(default=1, verbose_name=_("number of tournaments"))
+
     # default true, schema will be automatically created and synced when it is saved
     auto_create_schema = False
     auto_drop_schema = False
@@ -49,6 +64,70 @@ class Client(TenantMixin):
     def is_archived(self):
         return self.archive or (self.end_date is not None and self.end_date < date.today())
 
+    @property
+    def is_pro(self):
+        return self.plan == self.PRO_PLAN
+
 
 class Instance(DomainMixin):
     pass
+
+
+class Backup(models.Model):
+    MAX_USER_BACKUPS = 3
+    MAX_SYSTEM_BACKUPS = 2
+
+    client = models.ForeignKey(Client, models.CASCADE, verbose_name=_("client"))
+    name = models.CharField(max_length=50, blank=True, verbose_name=_("name"),
+        help_text=_("Label to easily identify wanted backup, eg. 'After R1'"))
+    filename = models.CharField(max_length=100, verbose_name=_("filename"))
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name=_("timestamp"))
+    user_initiated = models.BooleanField(default=False, verbose_name=_("user-initiated"))
+
+    def __str__(self):
+        return "%s Backup: %s" % (self.client.name, self.name)
+
+    class Meta:
+        verbose_name = _("backup")
+        verbose_name_plural = _("backups")
+
+    @property
+    def uri(self):
+        return "%s%s/%s" % (settings.BACKUPS_S3_BUCKET, self.client.schema_name, self.get_filename())
+
+    def get_filename(self):
+        if self.filename is None:
+            self.filename = '%d.dump.gz' % (int(timezone.now().timestamp()))
+        return self.filename
+
+    def save(self):
+        file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
+        if len(file_exists.communicate()[0]) == 0:  # File does not exist (yet)
+            pg_process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-a', '-O', '-x', '-F', 't'], stdout=PIPE)
+            s3_process = Popen(['aws', 's3', 'cp', '-', self.uri], stdin=pg_process.stdout, stdout=PIPE)
+            pg_process.stdout.close()
+            output, errors = s3_process.communicate()
+
+        return super().save()
+
+    def delete(self):
+        process = Popen(['aws', 's3', 'rm', self.uri])
+        output, err = process.communicate()
+        return super().delete()
+
+    def restore(self):
+        file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
+        if len(file_exists.communicate()[0]) == 0:  # File does not exist
+            self.delete()
+            return False
+
+        new_backup = Backup(client=self.client, name="Before restoration of backup", user_initiated=True)
+        new_backup.save()
+
+        s3_process = Popen(['aws', 's3', 'cp', self.uri, '-'], stdout=PIPE)
+        pg_process = Popen(['pg_restore',
+            get_postgres_url(), '-c', '-n', self.client.schema_name, '-a', '-O', '-x', '-F', 't'], stdin=s3_process.stdout, stdout=PIPE)
+        s3_process.stdout.close()
+        output, errors = pg_process.communicate()
+
+        return True

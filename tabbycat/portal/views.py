@@ -13,7 +13,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _, gettext_lazy
 from django.views.generic.base import TemplateView, View
-from django.views.generic.edit import FormView
+from django.views.generic.edit import FormMixin, FormView
 from django_tenants.utils import schema_context
 
 from notifications.models import EmailStatus, SentMessage
@@ -23,9 +23,9 @@ from utils.mixins import AssistantMixin
 from utils.tables import BaseTableBuilder
 from utils.views import PostOnlyRedirectView, VueTableTemplateView
 
-from .forms import InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
+from .forms import BackupInstanceForm, InstanceBackupSelectionForm, InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
 from .models import Client, Instance
-from .utils import on_payment_deny, on_payment_success
+from .utils import get_postgres_url, on_payment_deny, on_payment_success
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -33,6 +33,14 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def get_instance_url(request, instance):
     return "//" + instance.domain + "/"
+
+
+class ClientObjectMixin:
+    @property
+    def client(self):
+        if not hasattr(self, "_client"):
+            self._client = get_object_or_404(Client, user=self.request.user, schema_name=self.kwargs['schema'])
+        return self._client
 
 
 class CreateAccountView(FormView):
@@ -81,62 +89,126 @@ class ListOwnTournamentsView(AssistantMixin, VueTableTemplateView):
         return table
 
 
-class TournamentDetailView(AssistantMixin, TemplateView):
+class TournamentDetailView(AssistantMixin, ClientObjectMixin, FormMixin, VueTableTemplateView):
     template_name = "tournament_detail.html"
+    form_class = BackupInstanceForm
+
+    def get_table(self):
+        if self.client.is_pro:
+            empty_title = _("No data available")
+        else:
+            empty_title = _("The plan of the instance does not include backup storage")
+
+        table = BaseTableBuilder(title=_("Backups"), empty_title=empty_title, sort_key='timestamp')
+        qs = self.client.backup_set.all().order_by('-timestamp')
+
+        table.add_column({'key': 'radio', 'name': 'backup', 'title': ""}, [{
+            'component': 'radio-cell',
+            'checked': False,
+            'sort': False,
+            'value': b.id,
+            'name': 'backup',
+        } for b in qs])
+        table.add_column({'key': 'name', 'title': _("Name")}, [b.name for b in qs])
+        table.add_column({'key': 'timestamp', 'title': _("Time")}, [b.timestamp for b in qs])
+        return table
 
     def get_context_data(self, **kwargs):
-        client = get_object_or_404(Client, user=self.request.user, schema_name=self.kwargs['schema'])
         kwargs = super().get_context_data(**kwargs)
-        kwargs['client'] = client
-        kwargs['page_title'] = client.name
-        kwargs['domain'] = client.get_primary_domain()
+        kwargs['client'] = self.client
+        kwargs['page_title'] = self.client.name
+        kwargs['domain'] = self.client.get_primary_domain()
         return kwargs
 
 
-class DeleteInstanceView(AssistantMixin, TemplateView):
+class DeleteInstanceView(AssistantMixin, ClientObjectMixin, TemplateView):
     template_name = 'delete-site.html'
 
     def get_redirect_url(self, *args, **kwargs):
         return reverse('own-tournaments-list')
 
     def get_context_data(self, **kwargs):
-        client = get_object_or_404(Client, user=self.request.user, schema_name=self.kwargs['schema'])
         kwargs = super().get_context_data(**kwargs)
-        kwargs['client'] = client
+        kwargs['client'] = self.client
         return kwargs
 
     def post(self, request, *args, **kwargs):
-        client = get_object_or_404(Client, user=request.user, schema_name=self.kwargs['schema'])
-        name = client.name
+        name = self.client.name
 
-        client.delete()
+        self.client.delete()
         messages.success(request, _("Deleted the %s site" % name))
         return HttpResponseRedirect(self.get_redirect_url(*args, **kwargs))
 
 
-class BackupInstanceView(AssistantMixin, PostOnlyRedirectView):
+class ExportInstanceDatabaseView(AssistantMixin, ClientObjectMixin, PostOnlyRedirectView):
 
     def create_filename(self):
         date = time.strftime("%Y-%m-%d-%H-%M", time.gmtime())
         return "%s-%s.sql" % (self.client.schema_name, date)
 
-    def get_postgres_params(self):
-        db = settings.DATABASES['default']
-        return [
-            'pg_dump',
-            'postgres://%s:%s@%s:%s/%s' % (db['USER'], db['PASSWORD'], db['HOST'], db['PORT'], db['NAME']),
-            '-n', self.client.schema_name,
-            '-O', '-x',
-        ]
-
     def post(self, request, *args, **kwargs):
-        self.client = get_object_or_404(Client, user=request.user, schema_name=self.kwargs['schema'])
-
-        process = Popen(self.get_postgres_params(), stdout=PIPE)
+        process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-O', '-x'], stdout=PIPE)
         output, errors = process.communicate()
 
         response = HttpResponse(content_type='application/sql', content=output)
         response['Content-Disposition'] = "attachment; filename=%s" % (self.create_filename(),)
+        return response
+
+
+class BackupInstanceView(AssistantMixin, ClientObjectMixin, FormView):
+    form_class = BackupInstanceForm
+
+    def get_success_url(self):
+        return reverse('tournament-detail', kwargs={'schema': self.client.schema_name})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['client'] = self.client
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=405)
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Created backup"))
+        return super().form_valid(form)
+
+
+class InstanceBackupsActionView(AssistantMixin, ClientObjectMixin, FormView):
+    form_class = InstanceBackupSelectionForm
+
+    def get_success_url(self):
+        return reverse('tournament-detail', kwargs={'schema': self.client.schema_name})
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['backups'] = self.client.backup_set.all()
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(status=405)
+
+    def form_valid(self, form):
+        return {
+            'delete': self.delete,
+            'restore': self.restore,
+            'download': self.download,
+        }[self.request.POST.get('submit')](form, form.save())
+
+    def delete(self, form, backup):
+        backup.delete()
+        return super().form_valid(form)
+
+    def restore(self, form, backup):
+        backup.restore()
+        return super().form_valid(form)
+
+    def download(self, backup):
+        s3_process = Popen(['aws', 's3', 'cp', backup.uri, '-'], stdout=PIPE)
+        data, errors = s3_process.communicate()
+
+        response = HttpResponse(content_type='application/sql', content=data)
+        response['Content-Disposition'] = "attachment; filename=%s" % (backup.get_filename(),)
         return response
 
 
@@ -151,17 +223,9 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         return super().get_context_data(**kwargs)
 
     def get_form_kwargs(self):
-        """Return the keyword arguments for instantiating the form."""
-        kwargs = {
-            'initial': self.get_initial(),
-            'prefix': self.get_prefix(),
-        }
-
+        kwargs = super().get_form_kwargs()
         if self.request.method in ('POST', 'PUT'):
-            kwargs.update({
-                'data': json.loads(self.request.body),
-                'files': self.request.FILES,
-            })
+            kwargs['data'] = json.loads(self.request.body)
         return kwargs
 
     def form_valid(self, form):

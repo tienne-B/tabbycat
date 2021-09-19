@@ -1,3 +1,4 @@
+from django.conf import settings
 from django_tenants.utils import schema_context
 
 from .models import Instance
@@ -37,3 +38,8 @@ def on_payment_success(client, payment):
 
 def on_payment_deny(client, payment):
     client.delete(force_drop=not client.domains.exists())
+
+
+def get_postgres_url():
+    db = settings.DATABASES['default']
+    return 'postgres://%s:%s@%s:%s/%s' % (db['USER'], db['PASSWORD'], db['HOST'], db['PORT'], db['NAME'])

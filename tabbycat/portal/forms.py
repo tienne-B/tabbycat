@@ -10,7 +10,7 @@ from django.forms.widgets import DateInput, Select
 from django.utils.translation import gettext_lazy as _
 from pytz import common_timezones
 
-from .models import Client, Instance
+from .models import Backup, Client, Instance
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -94,3 +94,37 @@ class InvoicedInstanceCreationForm(InstanceCreationForm):
             client.save()
             self.create_schema(client)
         return client
+
+
+class BackupInstanceForm(forms.ModelForm):
+
+    class Meta:
+        model = Backup
+        fields = ('name',)
+
+    def __init__(self, *args, **kwargs):
+        self.client = kwargs.pop('client', None)
+        super().__init__(*args, **kwargs)
+        self.fields['name'].required = False
+
+    def save(self, commit=True):
+        backup = super().save(commit=False)
+        backup.client = self.client
+        backup.user_initiated = True
+
+        if commit:
+            backup.save()
+
+        return backup
+
+
+class InstanceBackupSelectionForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        self.backups = kwargs.pop('backups')
+        super().__init__(*args, **kwargs)
+
+        self.fields['backup'] = forms.ModelChoiceField(widget=forms.RadioSelect, queryset=self.backups)
+
+    def save(self, commit=True):
+        return self.cleaned_data['backup']
