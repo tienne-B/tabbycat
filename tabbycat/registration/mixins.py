@@ -83,7 +83,7 @@ class PaymentSessionMixin:
     payment_methods = {
         'card': lambda currency, country: True,
         'acss_debit': lambda currency, country: currency in ['CAD', 'USD'],
-        'wechat_pay': lambda currency, country: currency[:2] == country,
+        'wechat_pay': lambda currency, country: False,  # currency[:2] == country,
     }
 
     def get_price(self, participant_type):
