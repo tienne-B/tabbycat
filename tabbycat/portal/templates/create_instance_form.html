@@ -44,7 +44,7 @@ Your payment is currently being processed.
 
         <div class="list-group-item pt-3 pb-4">
           <div class="form-group">
-            <label>{% trans "Payment information" %}</label>
+            <label id="payment-info">{% trans "Payment information" %}</label>
             <div id="card-element" class="form-control"></div>
             <small class="form-text text-muted">{% trans "This fee goes to support the development of Tabbycat and Calico. No payment information is saved by Calico." %}</small>
             <div id="card-errors" role="alert"></div>
@@ -65,6 +65,23 @@ Your payment is currently being processed.
 {% endblock %}
 
 {% block js %}
+{{ block.super }}
+<script>
+let currencies = {
+  "aud": 55,
+  "cad": 50,
+  "eur": 35,
+  "usd": 40
+}
+let paymentLabel = document.querySelector('label#payment-info');
+let updatePrice = (e) => {
+  let currency = document.querySelector('#id_currency').value;
+  var val = currencies[currency];
+  paymentLabel.innerText = '{% trans "Payment information" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + ")";
+};
+updatePrice();
+document.querySelector('#id_currency').addEventListener("change", updatePrice);
+</script>
 <script>
 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 

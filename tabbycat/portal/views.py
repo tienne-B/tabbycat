@@ -238,7 +238,7 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         }
         customer = stripe.Customer.create(email=self.request.user.email)
         intent = stripe.PaymentIntent.create(
-            amount=currency_amounts.get(self.object.currency, 5000),
+            amount=currency_amounts.get(self.object.currency, 5000) * (1 + int(self.object.plan == self.object.PRO_PLAN)),
             currency=self.object.currency,
             description=self.object.name,
             customer=customer['id'],

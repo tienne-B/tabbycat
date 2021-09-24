@@ -14,10 +14,10 @@ from .utils import get_postgres_url
 
 class Client(TenantMixin):
     CURRENCIES = (
-        ('aud', _("Australian Dollar (55AUD)")),
-        ('cad', _("Canadian Dollar (50CAD)")),
-        ('eur', _("European Euro (35EUR)")),
-        ('usd', _("United States Dollar (40USD)")),
+        ('aud', _("Australian Dollar")),
+        ('cad', _("Canadian Dollar")),
+        ('eur', _("European Euro")),
+        ('usd', _("United States Dollar")),
     )
 
     REGULAR_PLAN = 'r'
@@ -33,7 +33,7 @@ class Client(TenantMixin):
         help_text=_("The name for the site that will appear in the list of your sites."))
     archive = models.BooleanField(default=False)
     created_on = models.DateField(auto_now_add=True)
-    end_date = models.DateField(auto_now_add=False, null=True, verbose_name=_("end date"),
+    end_date = models.DateField(auto_now_add=False, blank=True, null=True, verbose_name=_("end date"),
         help_text=_("The end date of the site's event. Tournament creation on the site will be disabled afterwards."))
 
     paid = models.IntegerField(default=0)  # In cents

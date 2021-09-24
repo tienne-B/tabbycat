@@ -66,6 +66,8 @@ class InstanceCreationForm(forms.ModelForm):
 
     def save(self, commit=True):
         client = super().save(commit=False)
+        client.number_tournaments = 0
+        client.plan = client.PRO_PLAN if self.cleaned_data['backups'] else client.REGULAR_PLAN
 
         if commit:
             client.save()

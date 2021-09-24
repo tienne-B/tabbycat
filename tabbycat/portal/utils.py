@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import F
 from django_tenants.utils import schema_context
 
 
@@ -25,6 +26,7 @@ def ws_using_tenant_schema(func):
 def on_payment_success(client, payment):
     from .models import Instance
     client.paid = payment.get('amount', 0)
+    client.number_tournaments = F('number_tournaments') + 1
     client.save()
 
     # Add domain
