@@ -80,12 +80,12 @@ class Institution(models.Model):
 
     tournament = models.ForeignKey(Tournament, models.CASCADE,
         verbose_name=_("tournament"))
-    external_url = models.URLField(null=True, verbose_name=_("external URL"))
+    external_url = models.URLField(null=True, blank=True, verbose_name=_("external URL"))
 
-    requested_teams = models.PositiveIntegerField(null=True, verbose_name=_("teams requested"))
+    requested_teams = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("teams requested"))
     accepted_teams = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("teams accepted"))
 
-    requested_adjudicators = models.PositiveIntegerField(null=True, verbose_name=_("adjudicators requested"))
+    requested_adjudicators = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("adjudicators requested"))
     accepted_adjudicators = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("adjudicators accepted"))
 
     manager = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, verbose_name=_("manager"))
@@ -184,7 +184,7 @@ class Team(models.Model):
         blank=True, null=True,   # uses null=True to allow multiple teams to have no emoji
         verbose_name=_("emoji"))
 
-    external_url = models.URLField(null=True, verbose_name=_("external URL"))
+    external_url = models.URLField(null=True, blank=True, verbose_name=_("external URL"))
     manager = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, verbose_name=_("manager"))
 
     class Meta:
@@ -269,7 +269,7 @@ class Adjudicator(Person):
         verbose_name=_("institution"))
     tournament = models.ForeignKey(Tournament, models.CASCADE,
         verbose_name=_("tournament"))
-    external_url = models.URLField(null=True, verbose_name=_("external URL"))
+    external_url = models.URLField(null=True, blank=True, verbose_name=_("external URL"))
     manager = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, verbose_name=_("manager"))
 
     independent = models.BooleanField(default=False, blank=True,
@@ -316,15 +316,15 @@ class Payment(models.Model):
     payment_intent = models.CharField(max_length=30, null=True, verbose_name=_("payment intent"))
     processor = models.CharField(max_length=6, choices=PROCESSOR_OPTIONS, blank=True, verbose_name=_("processor"))
 
-    paid_on = models.DateTimeField(auto_now_add=False, null=True, verbose_name=_("paid on"))
+    paid_on = models.DateTimeField(auto_now_add=False, blank=True, null=True, verbose_name=_("paid on"))
     status = models.CharField(max_length=23, choices=STATUS_CHOICES, default=STATUS_REQUIRES_PAYMENT_METHOD, verbose_name=_("status"))
 
     amount_paid = models.IntegerField(default=0, verbose_name=_("amount paid"))
     currency = models.CharField(max_length=3, choices=PaymentCurrency.choices, verbose_name=_("currency"))
 
     institution = models.ForeignKey(Institution, models.PROTECT, blank=True, verbose_name=_("institution"))
-    teams_paid = models.ManyToManyField(Team, verbose_name=_("teams paid"))
-    adjudicators_paid = models.ManyToManyField(Adjudicator, verbose_name=_("adjudicators paid"))
+    teams_paid = models.ManyToManyField(Team, blank=True, verbose_name=_("teams paid"))
+    adjudicators_paid = models.ManyToManyField(Adjudicator, blank=True, verbose_name=_("adjudicators paid"))
 
     num_teams = models.PositiveIntegerField(default=0, verbose_name=_("number of teams"))
     num_adjudicators = models.PositiveIntegerField(default=0, verbose_name=_("number of adjudicators"))
