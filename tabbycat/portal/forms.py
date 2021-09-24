@@ -31,9 +31,13 @@ class UserCreationForm(BaseUserCreationForm):
 
 
 class InstanceCreationForm(forms.ModelForm):
+    backups = forms.BooleanField(label=_("Enable backups and recovery (price +100%)"), required=False, initial=False,
+        help_text=_("Allows the creation of backups of the site (including automated backups after each round) "
+            "and the recovery of the site from those backups. For large tournaments."))
+
     class Meta:
         model = Client
-        fields = ("name", "schema_name", "end_date", "timezone", "currency")
+        fields = ("name", "schema_name", "backups", "timezone", "currency")
         labels = {
             "schema_name": _("Slug"),
         }
