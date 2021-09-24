@@ -52,6 +52,9 @@ urlpatterns = [
                     views.InstanceBackupsActionView.as_view(),
                     name='backup-action'),
             ])),
+            path('increase-limit/',
+                views.IncreaseSiteLimitView.as_view(),
+                name='increase-limit'),
         ])),
     ])),
 

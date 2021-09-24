@@ -41,6 +41,15 @@ def on_payment_deny(client, payment):
     client.delete(force_drop=not client.domains.exists())
 
 
+def on_tournament_payment_success(client, payment):
+    client.number_tournaments = F('number_tournaments') + int(payment['metadata']['quantity'])
+    client.save()
+
+
+def on_tournament_payment_fail(client, payment):
+    pass
+
+
 def get_postgres_url():
     db = settings.DATABASES['default']
     return 'postgres://%s:%s@%s:%s/%s' % (db['USER'], db['PASSWORD'], db['HOST'], db['PORT'], db['NAME'])

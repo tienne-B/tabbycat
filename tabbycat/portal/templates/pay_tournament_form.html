@@ -11,8 +11,9 @@
 {% block nav %}{% endblock %}
 
 {% block page-alerts %}
-{% blocktrans trimmed asvar message %}
-Your payment has been received and your Tabbycat site is currently being set up. It will be available shortly (in around a minute) at <a></a>.
+
+{% blocktrans trimmed with site=client.get_primary_domain.domain asvar message %}
+Your payment has been received. You may return to <a href="https://{{ site }}">your site</a> and create a tournament now.
 {% endblocktrans %}
 {% include "components/alert.html" with type="success" %}
 
@@ -32,13 +33,12 @@ Your payment is currently being processed.
       <form id="create_instance">
       {% csrf_token %}
 
-        {% trans "Create Tabbycat Site" context "page title" as title %}
-        {% trans "This form will create a Tabbycat site on which you can create tournaments for your event!" as text %}
-        {% trans "A site can be used for many tournaments that are part of an overarching event. The creation of tournaments will be disabled after the event, so new sites will be necessary for subsequent events." as p1 %}
-        {% blocktrans trimmed asvar p2 %}
-        Contact <a href="mailto:ebeaule@tabbycat-debate.org">Étienne</a> if you're experiencing difficulties with the form or require another payment method.
+        {% trans "Pay for Tabbycat Tournament" context "page title" as title %}
+        {% trans "This form will increase the number of tournaments you may host on an existing site." as text %}
+        {% blocktrans trimmed asvar p1 %}
+        Contact <a href="mailto:ebeaule@tabbycat-debate.org">Étienne</a> if you want an alternative plan/discount or require another payment method.
         {% endblocktrans %}
-        {% include "components/form-title.html" with emoji="✨" %}
+        {% include "components/form-title.html" with emoji="✨" p2="" %}
 
         {% include "components/form-main.html" %}
 
@@ -51,7 +51,7 @@ Your payment is currently being processed.
           </div>
         </div>
 
-        {% trans "Create Site" context "button" as title %}
+        {% trans "Pay for Tournament" context "button" as title %}
         {% trans "Cancel and go back to the site home page" as subtitle %}
         {% url 'global-main-page' as suburl %}
         {% include "components/form-submit.html" %}
@@ -76,12 +76,11 @@ let currencies = {
 let paymentLabel = document.querySelector('label#payment-info');
 let updatePrice = (e) => {
   let currency = document.querySelector('#id_currency').value;
-  var val = currencies[currency];
-  if (document.querySelector("#id_backups").checked) { val *= 2; }
+  var val = currencies[currency] * document.querySelector("#id_qtd").value;
   paymentLabel.innerText = '{% trans "Payment information" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + ")";
 };
 updatePrice();
-document.querySelector('#id_backups').addEventListener("change", updatePrice);
+document.querySelector("#id_qtd").addEventListener("change", updatePrice);
 document.querySelector('#id_currency').addEventListener("change", updatePrice);
 </script>
 <script>
@@ -124,7 +123,7 @@ form.addEventListener("submit", function(event) {
   delete data[""];
   delete data["continue"];
 
-  fetch("{% url 'create-instance' %}", {
+  fetch("{% url 'increase-limit' schema=client.schema_name %}", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -167,10 +166,6 @@ var payWithCard = function(stripe, card, clientSecret) {
 // Shows a success message when the payment is complete
 var orderComplete = function(paymentIntentId) {
   loading(false);
-  let url = "https://" + document.querySelector('[name=schema_name]').value + ".{{ main_domain }}";
-  let url_link = successMessage.querySelector("a");
-  url_link.setAttribute("href", url);
-  url_link.innerHTML = url;
   successMessage.hidden = false;
   submitButton.disabled = true;
 };

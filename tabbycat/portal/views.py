@@ -23,9 +23,10 @@ from utils.mixins import AssistantMixin
 from utils.tables import BaseTableBuilder
 from utils.views import PostOnlyRedirectView, VueTableTemplateView
 
-from .forms import BackupInstanceForm, InstanceBackupSelectionForm, InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm
+from .forms import (BackupInstanceForm, CurrencySelectionForm, InstanceBackupSelectionForm,
+    InstanceCreationForm, InvoicedInstanceCreationForm, UserCreationForm)
 from .models import Client, Instance
-from .utils import get_postgres_url, on_payment_deny, on_payment_success
+from .utils import get_postgres_url, on_payment_deny, on_payment_success, on_tournament_payment_fail, on_tournament_payment_success
 
 logger = logging.getLogger(__name__)
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -278,6 +279,39 @@ class InvoicedCreateInstanceFormView(AssistantMixin, FormView):
         return get_instance_url(self.request, self.instance)
 
 
+class IncreaseSiteLimitView(ClientObjectMixin, CreateInstanceFormView):
+    template_name = 'pay_tournament_form.html'
+    form_class = CurrencySelectionForm
+
+    def get_context_data(self, **kwargs):
+        kwargs['client'] = self.client
+        return super().get_context_data(**kwargs)
+
+    def form_valid(self, form):
+        currency, qtd = form.save()
+        currency_amounts = {
+            'aud': 5500,
+            'cad': 5000,
+            'eur': 3500,
+            'usd': 4000,
+        }
+        customer = stripe.Customer.create(email=self.request.user.email)
+        intent = stripe.PaymentIntent.create(
+            amount=currency_amounts.get(currency, 5000) * qtd,
+            currency=currency,
+            description=self.client.name + ": +Tournament",
+            customer=customer['id'],
+            metadata={
+                "product": "Extra Tournament",
+                "application": "tournament",
+                "slug": self.client.schema_name,
+                "user": self.request.user.username,
+                "quantity": qtd,
+            },
+        )
+        return JsonResponse({'clientSecret': intent['client_secret']})
+
+
 class StripeWebhookView(View):
 
     def post(self, request, *args, **kwargs):
@@ -301,6 +335,16 @@ class StripeWebhookView(View):
             }
             try:
                 args.append(Client.objects.get(payment_id=event['data']['object']['id']))
+            except Client.DoesNotExist:
+                return HttpResponse(status=204)
+        elif application == 'tournament':
+            actions = {
+                'payment_intent.succeeded': on_tournament_payment_success,
+                'payment_intent.canceled': on_tournament_payment_fail,
+                'payment_intent.payment_failed': on_tournament_payment_fail,
+            }
+            try:
+                args.append(Client.objects.get(schema_name=event['data']['object']['metadata']['slug']))
             except Client.DoesNotExist:
                 return HttpResponse(status=204)
         elif application == 'registration':

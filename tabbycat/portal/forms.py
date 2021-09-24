@@ -130,3 +130,13 @@ class InstanceBackupSelectionForm(forms.Form):
 
     def save(self, commit=True):
         return self.cleaned_data['backup']
+
+
+class CurrencySelectionForm(forms.Form):
+    currency = forms.ChoiceField(choices=Client.CURRENCIES, label=_("Currency"),
+        help_text=_("Calico supports payment in various currencies to avoid conversion fees."))
+    qtd = forms.IntegerField(min_value=1, initial=1, label=_("Quantity"),
+        help_text=_("Increase the site's limit by how many tournaments"))
+
+    def save(self, commit=True):
+        return self.cleaned_data['currency'], self.cleaned_data['qtd']
