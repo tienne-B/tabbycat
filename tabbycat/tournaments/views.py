@@ -1,13 +1,14 @@
 import json
 import logging
 from collections import OrderedDict
+from datetime import date
 from threading import Lock
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, login
-from django.db import connection
 from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.shortcuts import redirect, resolve_url
 from django.urls import reverse_lazy
 from django.utils.html import format_html_join
@@ -58,6 +59,7 @@ class PublicSiteIndexView(WarnAboutDatabaseUseMixin, TemplateView):
     def get_context_data(self, **kwargs):
         kwargs['tournaments'] = Tournament.objects.filter(active=True)
         kwargs['has_inactive'] = Tournament.objects.filter(active=False).exists()
+        kwargs['ntournaments'] = Tournament.objects.all().count()
         return super().get_context_data(**kwargs)
 
 
@@ -244,8 +246,12 @@ class CreateTournamentView(AdministratorMixin, WarnAboutDatabaseUseMixin, Create
     template_name = "create_tournament.html"
     db_warning_severity = messages.ERROR
 
+    def is_full(self):
+        client = self.request.tenant
+        return client.created_on > date(2021, 10, 1) and client.number_tournaments >= Tournament.objects.all().count()
+
     def test_func(self):
-        return super().test_func() and not connection.tenant.archive
+        return super().test_func() and not self.request.tenant.archive
 
     def get_context_data(self, **kwargs):
         demo_datasets = [
@@ -256,11 +262,16 @@ class CreateTournamentView(AdministratorMixin, WarnAboutDatabaseUseMixin, Create
         kwargs['demo_datasets'] = demo_datasets
         demo_slugs = [slug for slug, _ in demo_datasets]
         kwargs['preexisting'] = Tournament.objects.filter(slug__in=demo_slugs).values_list('slug', flat=True)
+        kwargs['is_full'] = self.is_full()
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
-        t = Tournament.objects.order_by('id').last()
-        return reverse_tournament('tournament-configure', tournament=t)
+        return reverse_tournament('tournament-configure', tournament=self.object)
+
+    def form_valid(self, form):
+        if self.is_full():
+            return HttpResponse(status=402)
+        return super().form_valid(form)
 
 
 class ConfigureTournamentView(AdministratorMixin, TournamentMixin, UpdateView):

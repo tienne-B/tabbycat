@@ -51,6 +51,13 @@
 <div class="list-group mt-2">
   {% if user.is_superuser %}
 
+    {% with url="https://calicotab.com/tournaments/"|add:request.tenant.schema_name|add:"/increase-limit/" %}
+      {% blocktrans trimmed with limit=request.tenant.number_tournaments asvar text %}
+        Increase limit ({{ ntournaments }} / {{ limit }} used)
+      {% endblocktrans %}
+      {% include "components/item-action.html" with icon="credit-card" %}
+    {% endwith %}
+
     {% trans "New Tournament" as text %}{% url 'tournament-create' as url %}
     {% include "components/item-action.html" with icon="plus-circle" %}
 

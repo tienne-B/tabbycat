@@ -6,6 +6,15 @@
 {% block sidebar %}{% endblock %} {# Need to override sidebar manually it will crash when no tournaments are present. Ideally this would be handled with the Mixins but this is a relatively unique view as it is part of Tournaments but is admin-only and thus shown with the sidebar #}
 
 {% block page-alerts %}
+  {% if is_full %}
+    {% blocktrans trimmed asvar message with schema=request.tenant.schema_name count count=request.tenant.number_tournaments %}
+      You have reached your limit of {{ count }} tournament on this site. To increase your limit and be able to create more tournaments here, <a href="https://calicotab.com/tournaments/{{ schema }}/increase-limit/">payment is required</a>.
+    {% plural %}
+      You have reached your limit of {{ count }} tournaments on this site. To increase your limit and be able to create more tournaments here, <a href="https://calicotab.com/tournaments/{{ schema }}/increase-limit/">payment is required</a>.
+    {% endblocktrans %}
+    {% include "components/alert.html" with type="warning" icon="alert-circle" %}
+  {% endif %}
+
   {% include 'errors/database_limit_warning.html' %}
 {% endblock %}
 
