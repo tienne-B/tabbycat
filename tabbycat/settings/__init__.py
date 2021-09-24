@@ -21,11 +21,11 @@ if os.environ.get('IN_DOCKER', '') and bool(int(os.environ['IN_DOCKER'])):
 if os.environ.get('DJANGO_SECRET_KEY', ''):
     base_settings.append('heroku.py')
 
-if os.environ.get('LOCAL_DEVELOPMENT', ''):
-    base_settings.append('development.py')
-
 if os.environ.get('AWS_MULTI', '') == 'true':
     base_settings.append('aws.py')
+
+if os.environ.get('LOCAL_DEVELOPMENT', ''):
+    base_settings.append('development.py')
 
 
 include(*base_settings)
