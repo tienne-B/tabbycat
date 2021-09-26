@@ -1,7 +1,6 @@
 import json
 import logging
 from collections import OrderedDict
-from datetime import date
 from threading import Lock
 
 from django.conf import settings
@@ -247,8 +246,7 @@ class CreateTournamentView(AdministratorMixin, WarnAboutDatabaseUseMixin, Create
     db_warning_severity = messages.ERROR
 
     def is_full(self):
-        client = self.request.tenant
-        return client.created_on > date(2021, 10, 1) and client.number_tournaments >= Tournament.objects.all().count()
+        return self.request.tenant.number_tournaments >= Tournament.objects.all().count()
 
     def test_func(self):
         return super().test_func() and not self.request.tenant.archive

@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.contrib import admin
 
 from .models import Round, Tournament
@@ -15,15 +13,15 @@ class TournamentAdmin(admin.ModelAdmin):
     ordering = ('seq', )
 
     def has_add_permission(self, request):
-        full = request.tenant.created_on > date(2021, 10, 1) and request.tenant.number_tournaments <= Tournament.objects.all().count()
+        full = request.tenant.schema_name != 'public' and request.tenant.number_tournaments <= Tournament.objects.all().count()
         return super().has_add_permission(request) and not (request.tenant.is_archived or full)
 
     def has_change_permission(self, request, obj=None):
-        full = request.tenant.created_on > date(2021, 10, 1) and request.tenant.number_tournaments < Tournament.objects.all().count()
+        full = request.tenant.schema_name != 'public' and request.tenant.number_tournaments < Tournament.objects.all().count()
         return super().has_change_permission(request, obj) and not (request.tenant.is_archived or full)
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return request.tenant.schema_name == 'public'
 
 
 # ==============================================================================
