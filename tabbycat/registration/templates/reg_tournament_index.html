@@ -49,17 +49,41 @@
   {% if own_adjs or own_teams %}
   <div class="list-group mt-2">
     {% for p in own_adjs %}
-      {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }}{% endblocktrans %}
+      {% if p.paid %}
+        {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }}{% endblocktrans %}
+      {% else %}
+        {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }} (paid){% endblocktrans %}
+      {% endif %}
       {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
       {% include "components/item-action.html" with icon="credit-card" %}
     {% endfor %}
     {% for p in own_teams %}
-      {% blocktrans trimmed with name=p.short_name asvar text %}Payment for {{ name }}{% endblocktrans %}
+      {% if p.paid %}
+        {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }}{% endblocktrans %}
+      {% else %}
+        {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }} (paid){% endblocktrans %}
+      {% endif %}
       {% tournamenturl 'individual-payment' url_key=p.speaker_set.0.url_key as url %}
       {% include "components/item-action.html" with icon="credit-card" %}
     {% endfor %}
   </div>
   {% endif %}
+
+  {% for i in own_institutions %}
+    <div class="list-group mt-2">
+      {% blocktrans trimmed with name=i.name asvar text %}Register teams for {{ name }}{% endblocktrans %}
+      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% include "components/item-action.html" with icon="sun" %}
+
+      {% blocktrans trimmed with name=i.name asvar text %}Register adjudicators for {{ name }}{% endblocktrans %}
+      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% include "components/item-action.html" with icon="file-text" %}
+
+      {% blocktrans trimmed with name=i.name asvar text %}Payment for {{ name }}{% endblocktrans %}
+      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% include "components/item-action.html" with icon="credit-card" %}
+    </div>
+  {% endfor %}
 
   {% if is_manager %}
     <div class="list-group mt-2">

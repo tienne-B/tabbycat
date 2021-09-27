@@ -63,12 +63,12 @@ class PublicTournamentIndexView(TournamentMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         if not self.request.user.is_anonymous:
-            kwargs['own_institutions'] = Institution.objects.filter(tournament=self.tournament, manager=self.request.user)
+            kwargs['own_institutions'] = self.tournament.institution_set.filter(manager=self.request.user)
             kwargs['is_manager'] = self.tournament.managers.filter(id=self.request.user.id).exists()
             kwargs['own_adjs'] = self.tournament.adjudicator_set.filter(
-                manager=self.request.user).exclude(payment__status=Payment.STATUS_SUCCEEDED)
+                manager=self.request.user).annotate(paid=Exists(Payment.objects.filter(adjudicators_paid=OuterRef('id'), status=Payment.STATUS_SUCCEEDED)))
             kwargs['own_teams'] = self.tournament.team_set.filter(
-                manager=self.request.user).exclude(payment__status=Payment.STATUS_SUCCEEDED)
+                manager=self.request.user).annotate(paid=Exists(Payment.objects.filter(teams_paid=OuterRef('id'), status=Payment.STATUS_SUCCEEDED)))
         return super().get_context_data(**kwargs)
 
 
@@ -327,7 +327,7 @@ class CreateInstitutionView(LoginRequiredMixin, TournamentMixin, RegistrationFor
     form_class = CreateInstitutionForm
 
     def get_success_url(self):
-        return reverse_tournament('institution-index', self.tournament, kwargs={'pk': self.object.id})
+        return reverse_tournament('tournament-home', self.tournament)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
