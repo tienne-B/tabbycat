@@ -246,7 +246,7 @@ class CreateTournamentView(AdministratorMixin, WarnAboutDatabaseUseMixin, Create
     db_warning_severity = messages.ERROR
 
     def is_full(self):
-        return self.request.tenant.number_tournaments >= Tournament.objects.all().count()
+        return self.request.tenant.number_tournaments <= Tournament.objects.all().count()
 
     def test_func(self):
         return super().test_func() and not self.request.tenant.archive
