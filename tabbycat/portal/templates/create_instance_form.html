@@ -118,7 +118,11 @@ form.addEventListener("submit", function(event) {
   event.preventDefault();
   var data = {};
   for (const e of form.elements) {
-    data[e.name] = e.value;
+    if (e.type === 'checkbox') {
+      data[e.name] = e.checked;
+    } else {
+      data[e.name] = e.value;
+    }
     e.disabled = true;
   }
   delete data[""];
