@@ -232,13 +232,14 @@ class AdminExportParticipantsView(AdminMixin, PostOnlyRedirectView):
 # =============================================================================
 
 class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
-    template_name = 'adjudicators_edit.html'
+    template_name = 'base_formset.html'
     formset_model = Adjudicator
+    page_title = gettext_lazy("Edit Adjudicators")
 
     def get_formset_factory_kwargs(self):
-        fields = ['name', 'email', 'gender']
-        if not self.tournament.pref('select_gender'):
-            fields.pop('gender')
+        fields = ['name', 'email']
+        if self.tournament.pref('select_gender'):
+            fields.append('gender')
 
         nexisting = self.institution.adjudicator_set.all().count()
         if self.tournament.pref('maximum_adjudicators') < 0:
@@ -255,7 +256,7 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
         return {'initial': initial}
 
     def get_formset_queryset(self):
-        return self.institution.adjudicator_set.filter(api_url__isnull=True)
+        return self.institution.adjudicator_set.filter(external_url__isnull=True)
 
     def get_success_url(self):
         return reverse_tournament('institution-home', self.tournament, kwargs={'institution_id': self.institution})
@@ -285,18 +286,19 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
 
 
 class EditTeamsView(InstitutionMixin, ModelFormSetView):
-    template_name = 'teams_edit.html'
+    template_name = 'base_formset.html'
     formset_model = Team
+    page_title = gettext_lazy("Edit Teams")
 
     def get_formset_factory_kwargs(self):
-        if self.tournament.pref('cap_teams') < 0:
+        if self.tournament.pref('maximum_teams') < 0:
             extra = 2
         else:
             extra = max(self.institution.accepted_teams - self.institution.team_set.count(), 0)
         return {'form': TeamDetailsForm, 'can_delete': True, 'extra': extra}
 
     def get_formset_queryset(self):
-        return self.institution.team_set.filter(api_url__isnull=True).prefetch_related('speaker_set', 'speaker_set__categories')
+        return self.institution.team_set.filter(external_url__isnull=True).prefetch_related('speaker_set', 'speaker_set__categories')
 
     def get_success_url(self):
         return reverse_tournament('institution-home', self.tournament, kwargs={'institution_id': self.institution})
