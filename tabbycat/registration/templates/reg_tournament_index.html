@@ -72,15 +72,15 @@
   {% for i in own_institutions %}
     <div class="list-group mt-2">
       {% blocktrans trimmed with name=i.name asvar text %}Register teams for {{ name }}{% endblocktrans %}
-      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% tournamenturl 'institution-edit-teams' pk=i.pk as url %}
       {% include "components/item-action.html" with icon="sun" %}
 
       {% blocktrans trimmed with name=i.name asvar text %}Register adjudicators for {{ name }}{% endblocktrans %}
-      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% tournamenturl 'institution-edit-adjudicators' pk=i.pk as url %}
       {% include "components/item-action.html" with icon="file-text" %}
 
       {% blocktrans trimmed with name=i.name asvar text %}Payment for {{ name }}{% endblocktrans %}
-      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% tournamenturl 'institution-payment' pk=i.pk as url %}
       {% include "components/item-action.html" with icon="credit-card" %}
     </div>
   {% endfor %}
