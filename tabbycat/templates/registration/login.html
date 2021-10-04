@@ -63,6 +63,13 @@
           {% url 'password_reset' as suburl %}
           {% include "components/form-submit.html" %}
 
+
+          {% if request.tenant.schema_name == 'public' %}
+            <div class="text-center pb-2 small text-muted">
+              <a href="{% url 'create-account' %}">{% trans "Create Calico Account" %}</a>
+            </div>
+          {% endif %}
+
         </form>
         </div>
       </div>
