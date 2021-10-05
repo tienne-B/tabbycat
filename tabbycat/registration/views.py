@@ -597,6 +597,8 @@ class IndividualPaymentView(TournamentMixin, PaymentSessionMixin, RegistrationFo
     template_name = 'individual_payment.html'
     acss_customer_type = 'personal'
 
+    object_type = None
+
     def get_context_data(self, **kwargs):
         obj, obj_type = self.get_object()
         kwargs['object'] = obj
@@ -610,17 +612,20 @@ class IndividualPaymentView(TournamentMixin, PaymentSessionMixin, RegistrationFo
         return super().get_context_data(**kwargs)
 
     def get_object(self):
-        try:
-            self.person = Person.objects.get(url_key=self.kwargs['url_key'])
-        except Person.DoesNotExist:
-            raise Http404
-        if self.person.adjudicator is not None:
-            if self.person.adjudicator.tournament != self.tournament:
+        if self.object_type == 'a':
+            try:
+                self.person = Person.objects.get(pk=self.kwargs['pk'])
+            except Person.DoesNotExist:
                 raise Http404
-            return self.person.adjudicator, 'a'
-        elif self.person.speaker.team.tournament != self.tournament:
+            if self.person.adjudicator is not None and self.person.adjudicator.tournament == self.tournament:
+                return self.person.adjudicator, 'a'
             raise Http404
-        return self.person.speaker.team, 't'
+        try:
+            team = Team.objects.filter(tournament=self.tournament, pk=self.kwargs['pk']).prefetch_related('speaker_set').first()
+        except Team.DoesNotExist:
+            raise Http404
+        self.person = team.speaker_set.all().first()
+        return team, 't'
 
     def create_payment_session(self):
         obj, obj_type = self.get_object()

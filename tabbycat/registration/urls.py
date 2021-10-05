@@ -30,7 +30,8 @@ urlpatterns = [
         path('payment/', include([
             path('cancel/', views.CancelPaymentView.as_view(), name='cancel-payment'),
             path('success/', views.SuccessPaymentView.as_view(), name='success-payment'),
-            path('<slug:url_key>/', views.IndividualPaymentView.as_view(), name='individual-payment'),
+            path('t<int:pk>/', views.IndividualPaymentView.as_view(object_type='t'), name='individual-team-payment'),
+            path('a<int:pk>/', views.IndividualPaymentView.as_view(object_type='a'), name='individual-adj-payment'),
         ])),
     ])),
 ]

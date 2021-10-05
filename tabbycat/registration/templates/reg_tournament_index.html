@@ -49,21 +49,21 @@
   {% if own_adjs or own_teams %}
   <div class="list-group mt-2">
     {% for p in own_adjs %}
-      {% if not p.paid %}
+      {% if not p.paid or pref.adjudicator_fee > 0 %}
         {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }}{% endblocktrans %}
       {% else %}
         {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }} (paid){% endblocktrans %}
       {% endif %}
-      {% tournamenturl 'individual-payment' url_key=p.url_key as url %}
+      {% tournamenturl 'individual-adj-payment' pk=p.pk as url %}
       {% include "components/item-action.html" with icon="credit-card" %}
     {% endfor %}
     {% for p in own_teams %}
-      {% if not p.paid %}
+      {% if not p.paid and pref.team_fee > 0 %}
         {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }}{% endblocktrans %}
       {% else %}
         {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }} (paid){% endblocktrans %}
       {% endif %}
-      {% tournamenturl 'individual-payment' url_key=p.speaker_set.0.url_key as url %}
+      {% tournamenturl 'individual-team-payment' pk=p.pk as url %}
       {% include "components/item-action.html" with icon="credit-card" %}
     {% endfor %}
   </div>
