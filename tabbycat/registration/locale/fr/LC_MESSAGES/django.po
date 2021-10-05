@@ -1,0 +1,935 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-10-05 12:18-0300\n"
+"PO-Revision-Date: 2021-10-05 14:58-0300\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Last-Translator: Étienne Beaulé <beauleetienne0@gmail.com>\n"
+"Language-Team: \n"
+"X-Generator: Poedit 3.0\n"
+
+#: registration/apps.py:10
+msgid "Registration"
+msgstr "Inscription"
+
+#: registration/forms.py:35
+msgid "Tabbycat tournament URL"
+msgstr "URL de tournoi Tabbycat"
+
+#: registration/forms.py:49
+msgid "Full URL to the tournament's page is required."
+msgstr "Un URL complet à la page du tournoi est requis."
+
+#: registration/forms.py:51
+msgid "Tournament must be in URL."
+msgstr "Le tournoi doit être dans l’URL."
+
+#: registration/forms.py:55
+msgid "URL must either be the tournament public home page or API detail endpoint."
+msgstr "L’URL doit soit être la page d’accueil publique du tournoi ou l’URL API de l’entité du tournoi."
+
+#: registration/forms.py:59
+msgid "API is disabled on the site."
+msgstr "L’IPA est désactivé sur le site."
+
+#: registration/forms.py:61
+msgid "Tournament not found."
+msgstr "Tournoi introuvable."
+
+#: registration/forms.py:164
+#, python-format
+msgid "Speaker %d name"
+msgstr "Nom de l’orateur %d"
+
+#: registration/forms.py:165
+#, python-format
+msgid "Speaker %d email"
+msgstr "Adresse courriel de l’orateur %d"
+
+#: registration/forms.py:168
+#, python-format
+msgid "Speaker %d categories"
+msgstr "Catégories de l’orateur %d"
+
+#: registration/forms.py:171
+#, python-format
+msgid "Speaker %d gender"
+msgstr "Genre de l’orateur %d"
+
+#: registration/mixins.py:39
+msgid "Submit"
+msgstr "Saisir"
+
+#: registration/models.py:16 registration/models.py:73
+#: registration/models.py:109 registration/models.py:133
+msgid "name"
+msgstr "nom"
+
+#: registration/models.py:17
+msgid "The full name, e.g. \"Australasian Intervarsity Debating Championships 2016\""
+msgstr "Le nom complet, p. ex. « Championnat Australasien de débat 2016 »"
+
+#: registration/models.py:19 registration/models.py:169
+msgid "short name"
+msgstr "nom court"
+
+#: registration/models.py:20
+msgid "The name used in the menu, e.g. \"Australs 2016\""
+msgstr "Le nom qui est utilisé sur le menu, p. ex. « Australs 2016 »"
+
+#: registration/models.py:22 registration/models.py:113
+msgid "slug"
+msgstr "Slug"
+
+#: registration/models.py:23
+msgid "The sub-URL of the tournament, cannot have spaces, e.g. \"australs2016\""
+msgstr "Le sous-URL du tournoi, p. ex. « australs2016 ». Un slug ne peut pas contenir des espaces."
+
+#: registration/models.py:24
+msgid "active"
+msgstr "actif"
+
+#: registration/models.py:25
+msgid "start date"
+msgstr "date de début"
+
+#: registration/models.py:26
+msgid "When will the tournament start"
+msgstr "Quand le tournoi débutera"
+
+#: registration/models.py:28 registration/models.py:83
+#: registration/models.py:106 registration/models.py:187
+#: registration/models.py:272
+msgid "external URL"
+msgstr "URL externe"
+
+#: registration/models.py:29
+msgid "API token"
+msgstr "jeton IPA"
+
+#: registration/models.py:31
+msgid "connected account"
+msgstr "compte connecté"
+
+#: registration/models.py:32
+msgid "fee percentage"
+msgstr "pourcentage"
+
+#: registration/models.py:34
+msgid "managers"
+msgstr "gérants"
+
+#: registration/models.py:37 registration/models.py:82
+#: registration/models.py:105 registration/models.py:178
+#: registration/models.py:271 registration/models.py:315
+msgid "tournament"
+msgstr "tournoi"
+
+#: registration/models.py:38
+msgid "tournaments"
+msgstr "tournois"
+
+#: registration/models.py:62
+msgid "instance"
+msgstr "instance"
+
+#: registration/models.py:67
+msgid "tournament preference"
+msgstr "préférence de tournoi"
+
+#: registration/models.py:68
+msgid "tournament preferences"
+msgstr "préférences de tournoi"
+
+#. Translators: Change the examples to institutions native to your language; keep consistent between strings
+#: registration/models.py:75
+msgid "The institution's full name, e.g., \"University of Cambridge\", \"Victoria University of Wellington\""
+msgstr "Le nom complet d’institution, par ex., « Université de Montréal », « Institut d’études politiques de Paris »"
+
+#: registration/models.py:77
+msgid "code"
+msgstr "code"
+
+#. Translators: Change the examples to institutions native to your language; keep consistent between strings
+#: registration/models.py:79
+msgid "What the institution is typically called for short, e.g., \"Cambridge\", \"Vic Wellington\""
+msgstr "Ce que s’appelle l’institution typiquement, par ex., « Montréal », « Sciences Po »"
+
+#: registration/models.py:85
+msgid "teams requested"
+msgstr "équipes demandées"
+
+#: registration/models.py:86
+msgid "teams accepted"
+msgstr "équipes acceptées"
+
+#: registration/models.py:88
+msgid "adjudicators requested"
+msgstr "juges demandés"
+
+#: registration/models.py:89
+msgid "adjudicators accepted"
+msgstr "juges acceptés"
+
+#: registration/models.py:91 registration/models.py:188
+#: registration/models.py:273
+msgid "manager"
+msgstr "gérant"
+
+#: registration/models.py:96 registration/models.py:176
+#: registration/models.py:269 registration/models.py:325
+#: registration/models.py:347
+msgid "institution"
+msgstr "institution"
+
+#: registration/models.py:97
+msgid "institutions"
+msgstr "institutions"
+
+#. Translators: Translate ESL to the acronym for "<target language> as a second/foreign language", not "English"
+#: registration/models.py:111
+msgid "Name to be displayed, e.g., \"Novice\", \"ESL\""
+msgstr "Nom à être affiché, e.g. « Novice », « FLS »"
+
+#. Translators: Translate esl to the acronym for "<target language> as a second/foreign language", not "English"
+#: registration/models.py:115
+msgid "Slug for URLs, e.g., \"novice\", \"esl\""
+msgstr "Slug pour les URLs, e.g., « novice », « fls »"
+
+#: registration/models.py:117
+msgid "sequence number"
+msgstr "nombre de séquence"
+
+#: registration/models.py:118
+msgid "The order in which the categories are displayed"
+msgstr "L’ordre dans lequel les catégories sont affichées"
+
+#: registration/models.py:124
+msgid "speaker category"
+msgstr "catégorie d’orateurs"
+
+#: registration/models.py:125 registration/models.py:253
+msgid "speaker categories"
+msgstr "catégories d’orateurs"
+
+#: registration/models.py:135
+msgid "email address"
+msgstr "adresse courriel"
+
+#: registration/models.py:137
+msgid "URL key"
+msgstr "clé d’URL"
+
+#: registration/models.py:142
+msgid "male"
+msgstr "homme"
+
+#: registration/models.py:143
+msgid "female"
+msgstr "femme"
+
+#: registration/models.py:144
+msgid "other"
+msgstr "autre"
+
+#: registration/models.py:146
+msgid "gender"
+msgstr "genre"
+
+#: registration/models.py:147
+msgid "Gender is displayed in the adjudicator allocation interface, and nowhere else"
+msgstr "Le genre est affiché dans l’interface d’attribution de juges"
+
+#: registration/models.py:150
+msgid "person"
+msgstr "personne"
+
+#: registration/models.py:151
+msgid "persons"
+msgstr "personnes"
+
+#: registration/models.py:159
+msgid "full name/suffix"
+msgstr "nom complet/suffix"
+
+#: registration/models.py:160
+msgid "Do not include institution name (see \"uses institutional prefix\" below)"
+msgstr "N’incluez pas le nom d’institution (voyez « utilise le préfixe institutionnel » ci-dessous)"
+
+#: registration/models.py:162
+msgid "short name/suffix"
+msgstr "nom court/suffix"
+
+#: registration/models.py:163
+msgid "The name shown in the draw. Do not include institution name (see \"uses institutional prefix\" below)"
+msgstr "Le nom tel qu’affiché dans les tirages. N’incluez pas le nom d’institution (voyez « utilise le préfixe institutionnel » ci-dessous)"
+
+#: registration/models.py:165
+msgid "code name"
+msgstr "nom code"
+
+#: registration/models.py:166
+msgid "Name used to obscure institutional identity on public-facing pages"
+msgstr "Un nom pour masquer l’identité institutionnelle sur les pages publiques"
+
+#: registration/models.py:170
+msgid "The name shown in the draw, including institution name. (This is autogenerated.)"
+msgstr "Le nom décodé montré dans le tirage, y compris le nom de l’institution. (Généré automatiquement.)"
+
+#: registration/models.py:172
+msgid "long name"
+msgstr "nom long"
+
+#: registration/models.py:173
+msgid "The full name of the team, including institution name. (This is autogenerated.)"
+msgstr "Le nom complet d’équipe, y compris le nom d’institution. (Généré automatiquement.)"
+
+#: registration/models.py:180
+msgid "Uses institutional prefix"
+msgstr "Utilise le préfixe institutionnel"
+
+#: registration/models.py:181
+msgid "If ticked, a team called \"1\" from Victoria will be shown as \"Victoria 1\""
+msgstr "Si cochée, une équipe appelée « 1 » de Victoria sera indiquée par « Victoria 1 »"
+
+#: registration/models.py:185
+msgid "emoji"
+msgstr "émoji"
+
+#: registration/models.py:197 registration/models.py:251
+#: registration/models.py:345 registration/views.py:603
+msgid "team"
+msgstr "équipe"
+
+#: registration/models.py:198
+msgid "teams"
+msgstr "équipes"
+
+#: registration/models.py:234
+msgid "Teams must have an institution if they are using the institutional prefix."
+msgstr "Si une équipe utilise le préfixe institutionnel, il faut qu’elle ait une institution."
+
+#: registration/models.py:236
+msgid "Teams must have a full name if they don't use the institutional prefix."
+msgstr "Si une équipe n’utilise pas le préfixe institutionnel, il faut qu’elle ait un nom complet."
+
+#: registration/models.py:238
+msgid "Teams must have a short name if they don't use the institutional prefix."
+msgstr "Si une équipe n’utilise pas le préfixe institutionnel, il faut qu’elle ait un nom court."
+
+#: registration/models.py:256
+msgid "speaker"
+msgstr "orateur"
+
+#: registration/models.py:257
+msgid "speakers"
+msgstr "orateurs"
+
+#: registration/models.py:276
+msgid "independent"
+msgstr "indépendant"
+
+#: registration/models.py:279 registration/models.py:346
+#: registration/views.py:603
+msgid "adjudicator"
+msgstr "juge"
+
+#: registration/models.py:280
+msgid "adjudicators"
+msgstr "juges"
+
+#: registration/models.py:297
+msgid "requires payment method"
+msgstr "requiert une méthode de paiement"
+
+#: registration/models.py:298
+msgid "requires confirmation"
+msgstr "requiert la confirmation"
+
+#: registration/models.py:299
+msgid "requires action"
+msgstr ""
+
+#: registration/models.py:300
+msgid "processing"
+msgstr ""
+
+#: registration/models.py:301
+msgid "succeeded"
+msgstr ""
+
+#: registration/models.py:302
+msgid "cancelled"
+msgstr ""
+
+#: registration/models.py:309
+msgid "by Stripe"
+msgstr ""
+
+#: registration/models.py:310
+msgid "by cash"
+msgstr ""
+
+#: registration/models.py:311
+msgid "Ignore payment"
+msgstr ""
+
+#: registration/models.py:312
+msgid "Other"
+msgstr ""
+
+#: registration/models.py:316
+msgid "payment intent"
+msgstr ""
+
+#: registration/models.py:317
+msgid "processor"
+msgstr ""
+
+#: registration/models.py:319
+msgid "paid on"
+msgstr ""
+
+#: registration/models.py:320
+msgid "status"
+msgstr ""
+
+#: registration/models.py:322
+msgid "amount paid"
+msgstr ""
+
+#: registration/models.py:323 registration/models.py:350
+msgid "currency"
+msgstr ""
+
+#: registration/models.py:326
+msgid "teams paid"
+msgstr ""
+
+#: registration/models.py:327
+msgid "adjudicators paid"
+msgstr ""
+
+#: registration/models.py:329
+msgid "number of teams"
+msgstr ""
+
+#: registration/models.py:330
+msgid "number of adjudicators"
+msgstr ""
+
+#: registration/models.py:333 registration/models.py:351
+msgid "payment"
+msgstr ""
+
+#: registration/models.py:334
+msgid "payments"
+msgstr ""
+
+#: registration/models.py:349
+msgid "amount"
+msgstr ""
+
+#: registration/models.py:354
+msgid "discount"
+msgstr ""
+
+#: registration/models.py:355
+msgid "discounts"
+msgstr ""
+
+#: registration/preferences.py:9
+msgid "Enable participant gender selection"
+msgstr ""
+
+#: registration/preferences.py:10
+msgid "Add field for participants' gender in the registration form"
+msgstr ""
+
+#: registration/preferences.py:17
+msgid "Maximum number of adjudicators per institution"
+msgstr ""
+
+#: registration/preferences.py:18
+msgid "Maximum number of adjudicators per institution in pre-registration. Use -1 for no limit."
+msgstr ""
+
+#: registration/preferences.py:25
+msgid "Maximum number of teams per institution"
+msgstr ""
+
+#: registration/preferences.py:26
+msgid "Maximum number of teams per institution in pre-registration. Use -1 for no limit."
+msgstr ""
+
+#: registration/preferences.py:33
+msgid "Allow teams to create their team name"
+msgstr ""
+
+#: registration/preferences.py:34
+msgid "Adds a field in team registration for a custom team name"
+msgstr ""
+
+#: registration/preferences.py:41
+msgid "Allow teams to choose their emoji"
+msgstr ""
+
+#: registration/preferences.py:42
+msgid "Adds a field in team registration for a custom unused emoji/code name"
+msgstr ""
+
+#: registration/preferences.py:49
+msgid "Allow team speakers to categorise themselves"
+msgstr ""
+
+#: registration/preferences.py:50
+msgid "Adds a field in team registration for speakers to select their speaker categories"
+msgstr ""
+
+#: registration/preferences.py:57
+msgid "Number of speakers per team"
+msgstr ""
+
+#: registration/preferences.py:58
+msgid "How many speakers does each team contain (as a maximum)"
+msgstr ""
+
+#: registration/preferences.py:65
+msgid "Minimum number of speakers"
+msgstr ""
+
+#: registration/preferences.py:66
+msgid "The minimal number of speakers in a team"
+msgstr ""
+
+#: registration/preferences.py:73
+msgid "Include institution in team names"
+msgstr ""
+
+#: registration/preferences.py:74
+msgid "To append the institution's name onto team names, even if custom."
+msgstr ""
+
+#: registration/preferences.py:81
+msgid "Currency to charge fees"
+msgstr ""
+
+#: registration/preferences.py:82
+msgid "The currency in which the payments will be made"
+msgstr ""
+
+#: registration/preferences.py:85
+msgid "Australian Dollar"
+msgstr ""
+
+#: registration/preferences.py:86
+msgid "Canadian Dollar"
+msgstr ""
+
+#: registration/preferences.py:87
+msgid "Euro"
+msgstr ""
+
+#: registration/preferences.py:88
+msgid "United States Dollar"
+msgstr ""
+
+#: registration/preferences.py:95
+msgid "Team registration fee"
+msgstr ""
+
+#: registration/preferences.py:96
+msgid "The team registration fee in the smallest denomination (20$ becomes 2000)"
+msgstr ""
+
+#: registration/preferences.py:103
+msgid "Adjudicator registration fee"
+msgstr ""
+
+#: registration/preferences.py:104
+msgid "The adjudicator registration fee in the smallest denomination (20$ becomes 2000)"
+msgstr ""
+
+#: registration/preferences.py:111
+msgid "Enable institution registration with participants"
+msgstr ""
+
+#: registration/preferences.py:112
+msgid "Institutions may register and may add participants to their approved limit"
+msgstr ""
+
+#: registration/preferences.py:119
+msgid "Enable team registration without institution"
+msgstr ""
+
+#: registration/preferences.py:120
+msgid "Teams may register without an institution as intermediary"
+msgstr ""
+
+#: registration/preferences.py:127
+msgid "Enable adjudicator registration without institution"
+msgstr ""
+
+#: registration/preferences.py:128
+msgid "Adjudicators may register without an institution as intermediary"
+msgstr ""
+
+#: registration/preferences.py:135
+msgid "Have institutions pay per registered participant"
+msgstr ""
+
+#: registration/preferences.py:136
+msgid "The alternative is that institutions pay by the number of approved participants, before their details"
+msgstr ""
+
+#: registration/preferences.py:143
+msgid "Institutional adjudicator rule"
+msgstr ""
+
+#: registration/preferences.py:144
+msgid "How many adjudicators must an institution provide from the number of teams"
+msgstr ""
+
+#: registration/preferences.py:147
+msgid "No adjudicators (0)"
+msgstr ""
+
+#: registration/preferences.py:148
+msgid "One adjudicator per team (n)"
+msgstr ""
+
+#: registration/preferences.py:149
+msgid "One adjudicator per team starting with the second team (n-1)"
+msgstr ""
+
+#: registration/preferences.py:162
+msgid "Missing adjudicator fee"
+msgstr ""
+
+#: registration/preferences.py:163
+msgid "The fee for not registering the required number of adjudicators, in the smallest denomination."
+msgstr ""
+
+#: registration/preferences.py:170
+msgid "Require institution registration"
+msgstr ""
+
+#: registration/preferences.py:171
+msgid "Require institutions to request slots before registration"
+msgstr ""
+
+#: registration/templates/admin_institutions_list.html:15
+msgid "Save allocations"
+msgstr ""
+
+#: registration/templates/base_form.html:22
+#: registration/templates/reg_create_tournament.html:24
+msgid "Cancel and go back to the tournament home page"
+msgstr ""
+
+#: registration/templates/individual_payment.html:5
+#, python-format
+msgid "The button below leads to the checkout. The registration fee for you, %(name)s (%(role)s) is %(amount)s %(currency)s."
+msgstr ""
+
+#: registration/templates/individual_payment.html:10
+msgid "Your team or institution seem to have already paid your registration fee."
+msgstr ""
+
+#: registration/templates/nav/reg_base_nav.html:6
+msgid "Tabbycat Logo"
+msgstr "Logo de Tabbycat"
+
+#: registration/templates/nav/reg_base_nav.html:45
+msgid "Log Out"
+msgstr "Déconnexion"
+
+#: registration/templates/nav/reg_base_nav.html:49
+msgid "Login"
+msgstr "Connexion"
+
+#: registration/templates/preferences_set.html:6
+msgid "Registration Configuration"
+msgstr ""
+
+#: registration/templates/preferences_set.html:8
+msgid "Edit Configuration"
+msgstr ""
+
+#: registration/templates/preferences_set.html:15
+msgid "Back to Home page"
+msgstr ""
+
+#: registration/templates/reg_create_tournament.html:23
+msgctxt "button"
+msgid "Submit"
+msgstr "Saisir"
+
+#: registration/templates/reg_tournament_index.html:5
+#: registration/templates/reg_tournament_index.html:9
+#, python-format
+msgid "Welcome to %(tournament)s"
+msgstr "Bienvenue à %(tournament)s"
+
+#: registration/templates/reg_tournament_index.html:30
+msgid "Register Institution"
+msgstr "Inscrire Institution"
+
+#: registration/templates/reg_tournament_index.html:36
+msgid "Register Team"
+msgstr "Inscrire Équipe"
+
+#: registration/templates/reg_tournament_index.html:42
+msgid "Register Adjudicator"
+msgstr "Inscrire Juge"
+
+#: registration/templates/reg_tournament_index.html:53
+#: registration/templates/reg_tournament_index.html:62
+#: registration/templates/reg_tournament_index.html:82
+#, python-format
+msgid "Payment for %(name)s"
+msgstr "Paiement pour %(name)s"
+
+#: registration/templates/reg_tournament_index.html:55
+#: registration/templates/reg_tournament_index.html:64
+#, python-format
+msgid "Payment for %(name)s (paid)"
+msgstr "Paiement pour %(name)s (payé)"
+
+#: registration/templates/reg_tournament_index.html:74
+#, python-format
+msgid "Register teams for %(name)s"
+msgstr "Inscrire équipes pour %(name)s"
+
+#: registration/templates/reg_tournament_index.html:78
+#, python-format
+msgid "Register adjudicators for %(name)s"
+msgstr "Inscrire juges pour %(name)s"
+
+#: registration/templates/reg_tournament_index.html:91
+msgid "Registration Statuses"
+msgstr "Statuts d’inscription"
+
+#: registration/templates/reg_tournament_index.html:95
+msgid "Institution Requests"
+msgstr "Demandes des institutions"
+
+#: registration/templates/reg_tournament_index.html:99
+msgid "Preferences"
+msgstr "Réglages"
+
+#: registration/templates/reg_tournament_index.html:109
+msgid "Connect Stripe"
+msgstr "Connecter Stripe"
+
+#: registration/templates/reg_tournament_index.html:118
+msgid "Tournament Staff"
+msgstr "Équipe du tournoi"
+
+#: registration/templates/registration_payment.html:14
+msgid "Go to checkout"
+msgstr "À la caisse"
+
+#: registration/views.py:35
+msgid "My Managed"
+msgstr ""
+
+#: registration/views.py:36
+msgid "Tournaments and institutions"
+msgstr "Tournois et institutions"
+
+#: registration/views.py:39
+msgid "My institutions"
+msgstr "Mes institutions"
+
+#: registration/views.py:42 registration/views.py:51
+msgid "Tournament"
+msgstr ""
+
+#: registration/views.py:43 registration/views.py:106 registration/views.py:131
+msgid "Institution"
+msgstr ""
+
+#: registration/views.py:49
+msgid "My tournaments"
+msgstr ""
+
+#: registration/views.py:53
+msgid "Date"
+msgstr ""
+
+#: registration/views.py:80
+msgid "Tournament options saved."
+msgstr ""
+
+#: registration/views.py:92
+msgid "Participants"
+msgstr ""
+
+#: registration/views.py:98 registration/views.py:170 registration/views.py:427
+#: registration/views.py:485 registration/views.py:535
+msgid "Adjudicators"
+msgstr ""
+
+#: registration/views.py:102 registration/views.py:127
+#: registration/views.py:157 registration/views.py:433
+#: registration/views.py:451
+msgid "Name"
+msgstr ""
+
+#: registration/views.py:107 registration/views.py:132
+msgid "-"
+msgstr ""
+
+#: registration/views.py:111
+msgid "Independent Adjudicator"
+msgstr ""
+
+#: registration/views.py:117 registration/views.py:136
+msgid "Paid?"
+msgstr "Payé?"
+
+#: registration/views.py:123 registration/views.py:169
+#: registration/views.py:445 registration/views.py:486
+#: registration/views.py:536
+msgid "Teams"
+msgstr "Équipes"
+
+#: registration/views.py:154
+msgid "Institutions"
+msgstr "Institutions"
+
+#: registration/views.py:158
+#, python-format
+msgid "%(institution)s (%(code)s)"
+msgstr "%(institution)s (%(code)s)"
+
+#: registration/views.py:163
+msgid "Requested Teams"
+msgstr "Équipes Demandées"
+
+#: registration/views.py:164 registration/views.py:167
+msgid "Approved"
+msgstr "Approuvé"
+
+#: registration/views.py:166
+msgid "Requested Adjudicators"
+msgstr "Juges Demandés"
+
+#: registration/views.py:185
+msgid "Institution allocations have been updated."
+msgstr ""
+
+#: registration/views.py:197
+msgid "Create Tournament"
+msgstr "Créer Tournoi"
+
+#: registration/views.py:237
+msgid "Edit Adjudicators"
+msgstr "Modifier Juges"
+
+#: registration/views.py:277
+#, python-format
+msgid "%(count)d adjudicator has been saved."
+msgid_plural "%(count)d adjudicators have been saved."
+msgstr[0] ""
+msgstr[1] ""
+
+#: registration/views.py:282
+#, python-format
+msgid "%(count)d adjudicator has been deleted."
+msgid_plural "%(count)d adjudicators have been deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+#: registration/views.py:291
+msgid "Edit Teams"
+msgstr "Modifier Équipes"
+
+#: registration/views.py:325
+msgid "Institutional Registration"
+msgstr "Inscription d’Institution"
+
+#: registration/views.py:326
+msgid "Add Institution"
+msgstr "Ajouter Institution"
+
+#: registration/views.py:360
+msgid "Team Registration"
+msgstr "Inscription d’équipe"
+
+#: registration/views.py:361
+msgid "Add Team"
+msgstr "Ajouter Équipe"
+
+#: registration/views.py:377
+msgid "Adjudicator Registration"
+msgstr "Inscription de Juge"
+
+#: registration/views.py:378
+msgid "Add Adjudicator"
+msgstr "Ajouter Juge"
+
+#: registration/views.py:384
+msgid "Successfully registered as an adjudicator"
+msgstr "Inscrit juge avec succès"
+
+#: registration/views.py:437 registration/views.py:455
+#: registration/views.py:502
+msgid "Discounts"
+msgstr "Rabais"
+
+#: registration/views.py:463 registration/views.py:520
+msgid "Summary"
+msgstr "Sommaire"
+
+#: registration/views.py:484 registration/views.py:534
+msgid "Item"
+msgstr "Item"
+
+#: registration/views.py:487 registration/views.py:537
+msgid "Missing Adjudicators"
+msgstr "Juges Manquants"
+
+#: registration/views.py:488 registration/views.py:538
+msgid "Subtotal"
+msgstr "Sous-total"
+
+#: registration/views.py:489 registration/views.py:539
+msgid "Institutional Discounts"
+msgstr "Rabais d’institution"
+
+#: registration/views.py:490 registration/views.py:510
+#: registration/views.py:540 registration/views.py:552
+msgid "Total"
+msgstr "Total"
+
+#: registration/views.py:492 registration/views.py:542
+msgid "Price"
+msgstr "Prix"
+
+#: registration/views.py:496 registration/views.py:546
+msgid "Quantity"
+msgstr "Quantité"
+
+#: registration/views.py:595
+msgid "Pay individual registration"
+msgstr "Payer l’inscription individuelle"
+
+#: registration/views.py:639
+msgid "Your payment has been canceled."
+msgstr "Votre paiement a été annulé."
+
+#: registration/views.py:645
+msgid "Your payment has been received."
+msgstr "Votre paiement a été reçu."
