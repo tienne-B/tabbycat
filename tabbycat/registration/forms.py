@@ -108,6 +108,7 @@ class TeamDetailsForm(forms.ModelForm):
         fields = ('reference', 'institution', 'emoji')
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
         self.tournament = kwargs.pop('tournament')
         self.institution = kwargs.pop('institution', None)
         super().__init__(*args, **kwargs)
@@ -172,18 +173,19 @@ class TeamDetailsForm(forms.ModelForm):
 
     def save(self, commit=True):
         # First save the team, then create the speakers
-        self.institution = self.institution or self.cleaned_data.get('institution')
+        institution = self.cleaned_data.get('institution', self.institution)
         team = super().save(commit=False)
 
-        override_name = not self.tournament.pref('choose_names') or not self.cleaned_data.get('reference')
+        override_name = not (self.tournament.pref('choose_names') and self.cleaned_data.get('reference'))
         if override_name:
             team.reference = "".join(
                 self.cleaned_data[self._get_speaker_name_field(i)][-1][0] for i in range(self.tournament.pref('max_speakers')))
         team.short_reference = team.reference[:35]
-        use_prefix = override_name or self.tournament.pref('include_institution') or self.institution is None
+        use_prefix = override_name or (self.tournament.pref('include_institution') and institution is not None)
         team.use_institution_prefix = use_prefix
         team.tournament = self.tournament
-        team.institution = self.institution
+        team.institution = institution
+        team.manager = self.request.user
 
         if commit:
             team.save()
@@ -204,7 +206,7 @@ class TeamDetailsForm(forms.ModelForm):
         if commit:
             for speaker, categories in speakers.items():
                 if len(categories) > 0:
-                    speaker.categories.set(*categories)
+                    speaker.categories.set(categories)
 
         return team
 

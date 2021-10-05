@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
@@ -226,18 +225,6 @@ class Team(models.Model):
     @property
     def name(self):
         return self.short_name
-
-    def clean(self):
-        # Require reference and short_reference if use_institution_prefix is False
-        errors = {}
-        if self.use_institution_prefix and self.institution is None:
-            errors['institution'] = _("Teams must have an institution if they are using the institutional prefix.")
-        if not self.use_institution_prefix and not self.reference:
-            errors['reference'] = _("Teams must have a full name if they don't use the institutional prefix.")
-        if not self.use_institution_prefix and not self.short_reference:
-            errors['short_reference'] = _("Teams must have a short name if they don't use the institutional prefix.")
-        if errors:
-            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         # Override the short and long names before saving

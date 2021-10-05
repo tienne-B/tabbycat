@@ -356,7 +356,7 @@ class AdminInstitutionDetailView(AdminMixin, TemplateView):
     pass
 
 
-class CreateTeamView(AssistantMixin, TournamentMixin, RegistrationFormTitlesMixin, FormView):
+class CreateTeamView(AssistantMixin, TournamentMixin, RegistrationFormTitlesMixin, CreateView):
     form_title = gettext_lazy("Team Registration")
     submit_title = gettext_lazy("Add Team")
 
@@ -368,6 +368,7 @@ class CreateTeamView(AssistantMixin, TournamentMixin, RegistrationFormTitlesMixi
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
         kwargs['tournament'] = self.tournament
         kwargs['institution'] = None
         return kwargs
