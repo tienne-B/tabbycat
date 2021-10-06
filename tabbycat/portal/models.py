@@ -1,6 +1,8 @@
 from datetime import date
 from subprocess import PIPE, Popen
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
@@ -8,8 +10,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_tenants.models import DomainMixin, TenantMixin
 from pytz import common_timezones
-
-from .utils import get_postgres_url
 
 
 class Client(TenantMixin):
@@ -95,16 +95,20 @@ class Backup(models.Model):
     def uri(self):
         return "%s%s/%s" % (settings.BACKUPS_S3_BUCKET, self.client.schema_name, self.filename)
 
+    def file_exists(self):
+        file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
+        return len(file_exists.communicate()[0]) != 0
+
     def save(self):
         if self.filename is None or self.filename == '':
             self.filename = '%d.dump.gz' % (int(timezone.now().timestamp()))
 
-        file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
-        if len(file_exists.communicate()[0]) == 0:  # File does not exist (yet)
-            pg_process = Popen(['pg_dump', get_postgres_url(), '-n', self.client.schema_name, '-O', '-x', '-Fc'], stdout=PIPE)
-            s3_process = Popen(['aws', 's3', 'cp', '-', self.uri], stdin=pg_process.stdout, stdout=PIPE)
-            pg_process.stdout.close()
-            output, errors = s3_process.communicate()
+        if not self.file_exists():
+            async_to_sync(get_channel_layer().send)("backups", {
+                "type": "create_backup",
+                "uri": self.uri,
+                "schema_name": self.client.schema_name,
+            })
 
         return super().save()
 
@@ -114,18 +118,17 @@ class Backup(models.Model):
         return super().delete()
 
     def restore(self):
-        file_exists = Popen(['aws', 's3', 'ls', self.uri], stdout=PIPE)
-        if len(file_exists.communicate()[0]) == 0:  # File does not exist
+        if not self.file_exists():  # File does not exist
             self.delete()
             return False
 
         new_backup = Backup(client=self.client, name="Before restoration of backup", user_initiated=True)
         new_backup.save()
 
-        s3_process = Popen(['aws', 's3', 'cp', self.uri, '-'], stdout=PIPE)
-        pg_process = Popen(['pg_restore', '-d', get_postgres_url(),
-            '-c', '--if-exists', '-n', self.client.schema_name, '-O', '-x'], stdin=s3_process.stdout, stdout=PIPE)
-        s3_process.stdout.close()
-        output, errors = pg_process.communicate()
+        async_to_sync(get_channel_layer().send)("backups", {
+            "type": "restore_backup",
+            "uri": self.uri,
+            "schema_name": self.client.schema_name,
+        })
 
         return True

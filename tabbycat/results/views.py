@@ -4,7 +4,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.contrib import messages
-from django.db import connection, ProgrammingError
+from django.db import ProgrammingError
 from django.db.models import Count, Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -320,7 +320,7 @@ class BaseBallotSetView(LogActionMixin, TournamentMixin, FormView):
                     "subject": self.tournament.pref("ballot_email_subject"),
                     "body": self.tournament.pref("ballot_email_message"),
                     "send_to": None,
-                    "tenant": connection.schema_name,
+                    "tenant": self.request.tenant.schema_name,
                 })
 
         self.add_success_message()

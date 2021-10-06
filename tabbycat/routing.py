@@ -6,7 +6,7 @@ from adjallocation.consumers import AdjudicatorAllocationWorkerConsumer, PanelEd
 from checkins.consumers import CheckInEventConsumer
 from draw.consumers import DebateEditConsumer
 from notifications.consumers import NotificationQueueConsumer
-from portal.consumers import PortalQueueConsumer
+from portal.consumers import DatabaseBackupConsumer, PortalQueueConsumer
 from portal.middleware import AuthMiddlewareStack
 from results.consumers import BallotResultConsumer, BallotStatusConsumer
 from venues.consumers import VenuesWorkerConsumer
@@ -40,6 +40,7 @@ application = ProtocolTypeRouter({
         # Name used in runworker cmd : SyncConsumer responsible
         "notifications":  NotificationQueueConsumer, # Email sending
         "portal": PortalQueueConsumer,  # For creating schemas
+        "backups": DatabaseBackupConsumer,  # For creating DB backups
         "adjallocation": AdjudicatorAllocationWorkerConsumer,
         "venues": VenuesWorkerConsumer,
     }),

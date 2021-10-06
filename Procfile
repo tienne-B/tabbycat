@@ -4,4 +4,4 @@
 # This better allows for multiple processes to be run simultaneously
 
 web: honcho -f ProcfileMulti start
-worker: python tabbycat/manage.py runworker notifications portal adjallocation venues
+worker: python tabbycat/manage.py runworker notifications portal backups adjallocation venues

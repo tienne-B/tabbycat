@@ -151,13 +151,13 @@ class CompleteRoundView(RoundMixin, AdministratorMixin, LogActionMixin, PostOnly
 
         if request.tenant.is_pro:
             from django_tenants.utils import schema_context
-            from portal.models import Backup
             with schema_context('public'):
+                from portal.models import Backup
                 backups = request.tenant.backup_set.filter(user_initiated=False).order_by('timestamp')[:Backup.MAX_SYSTEM_BACKUPS]
                 if backups.count() >= Backup.MAX_SYSTEM_BACKUPS:
                     backups.first().delete()
-                    backup = Backup(client=request.tenant, name="After %s" % (self.round.name,), user_initiated=False)
-                    backup.save()
+                backup = Backup(client=request.tenant, name="After %s" % (self.round.name,), user_initiated=False)
+                backup.save()
 
         incomplete_rounds = self.tournament.round_set.filter(completed=False)
 
