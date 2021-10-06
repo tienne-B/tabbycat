@@ -49,7 +49,7 @@
   {% if own_adjs or own_teams %}
   <div class="list-group mt-2">
     {% for p in own_adjs %}
-      {% if not p.paid or pref.adjudicator_fee > 0 %}
+      {% if not p.paid and pref.adjudicator_fee > 0 %}
         {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }}{% endblocktrans %}
       {% else %}
         {% blocktrans trimmed with name=p.name asvar text %}Payment for {{ name }} (paid){% endblocktrans %}

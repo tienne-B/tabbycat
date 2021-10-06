@@ -304,21 +304,19 @@ class EditTeamsView(InstitutionMixin, ModelFormSetView):
         return reverse_tournament('institution-home', self.tournament, kwargs={'institution_id': self.institution})
 
     def get_form_kwargs(self):
-        return {'tournament': self.tournament, 'institution': self.institution}
+        return {'request': self.request, 'tournament': self.tournament, 'institution': self.institution}
 
     def get_formset_kwargs(self):
         initial = []
         for team in self.get_formset_queryset():
             team_dict = {'reference': team.reference, 'emoji': team.emoji}
             for i, speaker in enumerate(team.speaker_set.all()):
-                team_dict.extend({
-                    TeamDetailsForm._get_speaker_name_field(i): speaker.name,
-                    TeamDetailsForm._get_speaker_email_field(i): speaker.email,
-                    TeamDetailsForm._get_speaker_gender_field(i): speaker.gender,
-                    TeamDetailsForm._get_speaker_categories_field(i): speaker.categories.all(),
-                })
+                team_dict[TeamDetailsForm._get_speaker_name_field(i)] = speaker.name
+                team_dict[TeamDetailsForm._get_speaker_email_field(i)] = speaker.email
+                team_dict[TeamDetailsForm._get_speaker_gender_field(i)] = speaker.gender
+                team_dict[TeamDetailsForm._get_speaker_categories_field(i)] = speaker.categories.all()
             initial.append(team_dict)
-        return {'initial': initial}
+        return {'initial': initial, 'form_kwargs': self.get_form_kwargs()}
 
 
 class CreateInstitutionView(LoginRequiredMixin, TournamentMixin, RegistrationFormTitlesMixin, CreateView):
