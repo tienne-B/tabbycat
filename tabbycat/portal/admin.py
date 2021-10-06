@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _, ngettext_lazy
 from django_tenants.admin import TenantAdminMixin
 from django_tenants.utils import get_public_schema_name
 
-from .models import Client, Instance
+from .models import Backup, Client, Instance
 
 
 class HideFromTenantsMixin:
@@ -94,3 +94,11 @@ class ClientAdmin(TenantAdminMixin, HideFromTenantsMixin, admin.ModelAdmin):
             num_schemas,
         ) % {'count': num_schemas})
     create_migrate_schema.short_description = _("Create and Migrate")
+
+
+@admin.register(Backup)
+class BackupAdmin(TenantAdminMixin, HideFromTenantsMixin, admin.ModelAdmin):
+    list_display = ('client', 'name', 'filename', 'timestamp')
+
+    def delete_queryset(self, request, queryset):
+        self.message_user(request, _("Please delete backups individually"))
