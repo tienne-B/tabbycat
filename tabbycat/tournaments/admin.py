@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models import F
+from django_tenants.utils import schema_context
 
 from .models import Round, Tournament
 
@@ -20,8 +22,21 @@ class TournamentAdmin(admin.ModelAdmin):
         full = request.tenant.schema_name != 'public' and request.tenant.number_tournaments < Tournament.objects.all().count()
         return super().has_change_permission(request, obj) and not (request.tenant.is_archived or full)
 
-    def has_delete_permission(self, request, obj=None):
-        return request.tenant.schema_name == 'public'
+    def delete_queryset(self, request, queryset):
+        tenant = request.tenant
+        if tenant.schema_name != 'public':
+            count = queryset.count()
+            with schema_context('public'):
+                tenant.number_tournaments = F('number_tournaments') - count
+                tenant.save()
+        return super().delete_queryset(request, queryset)
+
+    def delete_model(self, request, obj):
+        tenant = request.tenant
+        with schema_context('public'):
+            tenant.number_tournaments = F('number_tournaments') - 1
+            tenant.save()
+        return super().delete_model(request, obj)
 
 
 # ==============================================================================
