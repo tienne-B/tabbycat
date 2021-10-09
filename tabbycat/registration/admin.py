@@ -1,7 +1,6 @@
 from django.contrib import admin
 from dynamic_preferences.admin import PerInstancePreferenceAdmin
 
-from participants.emoji import pick_unused_emoji
 from portal.admin import HideFromTenantsMixin
 
 from .models import Adjudicator, Institution, Payment, Speaker, SpeakerCategory, Team, Tournament, TournamentPreferenceModel
@@ -46,11 +45,6 @@ class TeamAdmin(HideFromTenantsMixin, admin.ModelAdmin):
                      'institution__code', 'tournament__name')
     list_filter = ('tournament', 'institution')
     inlines = (SpeakerInline,)
-
-    def formfield_for_choice_field(self, db_field, request, **kwargs):
-        if db_field.name == 'emoji' and kwargs.get("initial") is None:
-            kwargs["initial"] = pick_unused_emoji()[0]
-        return super().formfield_for_choice_field(db_field, request, **kwargs)
 
 
 @admin.register(Adjudicator)
