@@ -64,6 +64,9 @@ urlpatterns = [
         path('webhook/',
             views.StripeWebhookView.as_view(),
             name='stripe-webhook'),
+        path('connect-webhook/',
+            views.StripeConnectWebhookView.as_view(),
+            name='stripe-connect-webhook'),
     ])),
 
     path('sns/email/<slug:wh_key>/', views.SESWebhookView.as_view(), name='sns-ses-webhook'),

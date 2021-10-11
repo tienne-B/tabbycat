@@ -316,8 +316,6 @@ class StripeWebhookView(View):
 
     def post(self, request, *args, **kwargs):
         signature = request.META['HTTP_STRIPE_SIGNATURE']
-        logger.info(signature)
-
         try:
             event = stripe.Webhook.construct_event(request.body, signature, settings.STRIPE_ENDPOINT_SEC)
         except ValueError:  # Invalid payload
@@ -347,7 +345,27 @@ class StripeWebhookView(View):
                 args.append(Client.objects.get(schema_name=event['data']['object']['metadata']['slug']))
             except Client.DoesNotExist:
                 return HttpResponse(status=204)
-        elif application == 'registration':
+
+        args.append(event['data']['object'])
+        if event['type'] in actions:
+            actions[event['type']](*args)
+
+        return HttpResponse(status=200)
+
+
+class StripeConnectWebhookView(View):
+    def post(self, request, *args, **kwargs):
+        signature = request.META['HTTP_STRIPE_SIGNATURE']
+        try:
+            event = stripe.Webhook.construct_event(request.body, signature, settings.STRIPE_CONNECT_ENDPOINT_SEC)
+        except ValueError:  # Invalid payload
+            return HttpResponse(status=400)
+        except stripe.error.SignatureVerificationError:  # Invalid signature
+            return HttpResponse(status=400)
+
+        args = []
+        application = event['data']['object']['metadata'].get('application', 'portal')
+        if application == 'registration':
             actions = {
                 'payment_intent.succeeded': payment_webhook_received,
                 'payment_intent.canceled': payment_webhook_received,
