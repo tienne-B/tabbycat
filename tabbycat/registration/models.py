@@ -309,7 +309,7 @@ class Payment(models.Model):
     amount_paid = models.IntegerField(default=0, verbose_name=_("amount paid"))
     currency = models.CharField(max_length=3, choices=PaymentCurrency.choices, verbose_name=_("currency"))
 
-    institution = models.ForeignKey(Institution, models.PROTECT, blank=True, verbose_name=_("institution"))
+    institution = models.ForeignKey(Institution, models.PROTECT, blank=True, null=True, verbose_name=_("institution"))
     teams_paid = models.ManyToManyField(Team, blank=True, verbose_name=_("teams paid"))
     adjudicators_paid = models.ManyToManyField(Adjudicator, blank=True, verbose_name=_("adjudicators paid"))
 
