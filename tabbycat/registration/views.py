@@ -259,7 +259,7 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
         return self.institution.adjudicator_set.filter(external_url__isnull=True)
 
     def get_success_url(self):
-        return reverse_tournament('institution-home', self.tournament, kwargs={'institution_id': self.institution})
+        return reverse_tournament('tournament-home', self.tournament)
 
     def formset_valid(self, formset):
         adjudicators = formset.save(commit=False)
@@ -301,7 +301,7 @@ class EditTeamsView(InstitutionMixin, ModelFormSetView):
         return self.institution.team_set.filter(external_url__isnull=True).prefetch_related('speaker_set', 'speaker_set__categories')
 
     def get_success_url(self):
-        return reverse_tournament('institution-home', self.tournament, kwargs={'institution_id': self.institution})
+        return reverse_tournament('tournament-home', self.tournament)
 
     def get_form_kwargs(self):
         return {'request': self.request, 'tournament': self.tournament, 'institution': self.institution}
