@@ -23,6 +23,7 @@ from .mixins import AdminMixin, InstitutionMixin, PaymentSessionMixin, Registrat
 from .models import Adjudicator, Discount, Institution, Payment, Person, SpeakerCategory, Team, Tournament
 from .preferences import AdjudicatorsPerTeamRule
 from .registries import tournament_preferences_registry
+from .serializers import AdjudicatorSerializer, InstitutionSerializer, TeamSerializer
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -189,8 +190,29 @@ class AdminInstitutionsListView(AdminMixin, TournamentMixin, VueTableTemplateVie
         return reverse_tournament('tournament-home', self.tournament)
 
 
-class AdminImportTournamentView(AdminMixin, PostOnlyRedirectView):
-    pass
+class ExportTournamentView(AdminMixin, TournamentMixin, PostOnlyRedirectView):
+
+    def get_success_url(self):
+        return reverse_tournament('tournament-home', self.tournament)
+
+    def post(self, request, *args, **kwargs):
+        headers = {'Authorization': 'Token %s' % (self.tournament.api_token,)}
+
+        for model, serializer in ((Institution, InstitutionSerializer), (Adjudicator, AdjudicatorSerializer), (Team, TeamSerializer)):
+            qs = model.objects.filter(tournament=self.tournament, external_url__isnull=True)
+            if model is Institution:
+                base_url = self.tournament.external_url.split("/")[:-2]
+                base_url.append("institutions")
+                url = "/".join(base_url)
+            else:
+                url = self.tournament.external_url + "/" + model.__name__.lower() + "s"
+            for obj in qs:
+                r = requests.post(url, json=serializer(obj).data, headers=headers)
+                r.raise_for_status()
+                obj.external_url = r.json()['url']
+            model.objects.bulk_update(qs, ['external_url'])
+
+        return super().post(request, *args, **kwargs)
 
 
 class CreateTournamentView(AssistantMixin, RegistrationFormTitlesMixin, FormView):

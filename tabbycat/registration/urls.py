@@ -26,6 +26,7 @@ urlpatterns = [
                 path('<int:pk>/', views.AdminInstitutionDetailView.as_view(), name='admin-institution-detail'),
             ])),
             path('stripe-connect/', views.ConnectStripeAccountView.as_view(), name='stripe-connect-account'),
+            path('export/', views.ExportTournamentView.as_view(), name='export-tournament'),
         ])),
         path('payment/', include([
             path('cancel/', views.CancelPaymentView.as_view(), name='cancel-payment'),

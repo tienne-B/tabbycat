@@ -268,4 +268,4 @@ class InstitutionApproveForm(forms.Form):
         for institution in institutions:
             institution.accepted_teams = self.cleaned_data[self._fieldname_accepted_teams(institution)]
             institution.accepted_adjudicators = self.cleaned_data[self._fieldname_accepted_adjs(institution)]
-        institutions.bulk_update(['accepted_teams', 'accepted_adjudicators'])
+        Institution.objects.bulk_update(institutions, ['accepted_teams', 'accepted_adjudicators'])

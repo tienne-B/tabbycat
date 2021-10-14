@@ -112,6 +112,13 @@
     {% endif %}
   {% endif %}
 
+    <div class="list-group mt-2">
+      <form action="{% tournamenturl 'export-tournament' %}" method="POST">
+        {% csrf_token %}
+        <button type="submit" name="continue" class="btn btn-block btn-primary mb-3">{% trans "Export Registration" %}</button>
+      </form>
+    </div>
+
   {% if pref.tournament_staff %}
     <div class="card mt-3">
       <div class="card-header h6">
