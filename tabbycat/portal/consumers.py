@@ -36,7 +36,7 @@ class DatabaseBackupConsumer(SyncConsumer):
 
     def create_backup(self, event):
         logger.info("Creating backup: %s" % (event['uri'],))
-        pg_process = Popen(['pg_dump', get_postgres_url(), '-n', event['schema_name'], '-O', '-x', '-Fc'], stdout=PIPE)
+        pg_process = Popen(['pg_dump', get_postgres_url(), '-n', '"'+event['schema_name']+'"', '-O', '-x', '-Fc'], stdout=PIPE)
         s3_process = Popen(['aws', 's3', 'cp', '-', event['uri']], stdin=pg_process.stdout, stdout=PIPE)
         pg_process.stdout.close()
         output, errors = s3_process.communicate()
@@ -46,6 +46,6 @@ class DatabaseBackupConsumer(SyncConsumer):
         logger.info("Restoring from backup: %s" % (event['uri'],))
         s3_process = Popen(['aws', 's3', 'cp', event['uri'], '-'], stdout=PIPE)
         pg_process = Popen(['pg_restore', '-d', get_postgres_url(),
-            '-c', '--if-exists', '-n', event['schema_name'], '-O', '-x'], stdin=s3_process.stdout, stdout=PIPE)
+            '-c', '--if-exists', '-n', '"'+event['schema_name']+'"', '-O', '-x'], stdin=s3_process.stdout, stdout=PIPE)
         s3_process.stdout.close()
         output, errors = pg_process.communicate()

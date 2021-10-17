@@ -23,7 +23,10 @@ from .models import Instance
 @database_sync_to_async
 def get_schema(host):
     with schema_context('public'):
-        return Instance.objects.select_related('tenant').get(domain=host).tenant.schema_name
+        try:
+            return Instance.objects.select_related('tenant').get(domain=host).tenant.schema_name
+        except Instance.DoesNotExist:
+            raise Exception("Host %s is not found for tenant" % (host,))
 
 
 class TenantSchemaMiddleware:
