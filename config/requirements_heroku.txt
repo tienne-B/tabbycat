@@ -9,5 +9,5 @@ gunicorn==20.0.4                        # Primary server for wsgi
 django-redis==4.12.1                    # Use redis for cache (on heroku; local optional)
 
 # Misc
-scout-apm==2.14.3                       # Performance monitoring
+scout-apm==2.17.0                        # Performance monitoring
 sentry-sdk==0.19.5                      # Client for Sentry error tracking

@@ -165,9 +165,8 @@ class RoundWithCompleteOptionField(RoundField):
         return super().to_python(value)
 
 
-def clear_cache_all_rounds(tournament):
-    cache.delete_many(
-        ["%s_%s_%s_%s" % (connection.schema_name, tournament.slug, r.seq, 'object') for r in tournament.round_set.all()])
+def clear_all_round_caches(tournament):
+    cache.delete_many(["%s_%s_%s_%s" % (connection.schema_name, tournament.slug, r.seq, 'object') for r in tournament.round_set.all()])
     update_tournament_cache(Tournament, tournament)
 
 
@@ -186,7 +185,7 @@ class SetCurrentRoundSingleBreakCategoryForm(Form):
         seq = self.cleaned_data['current_round'].seq
         self.tournament.round_set.filter(seq__lt=seq).update(completed=True)
         self.tournament.round_set.filter(seq__gte=seq).update(completed=False)
-        clear_cache_all_rounds(self.tournament)
+        clear_all_round_caches(self.tournament)
 
 
 class SetCurrentRoundMultipleBreakCategoriesForm(Form):
@@ -249,4 +248,4 @@ class SetCurrentRoundMultipleBreakCategoriesForm(Form):
                     seq = self.cleaned_data['elim_' + category.slug].seq
                     category.round_set.filter(seq__lt=seq).update(completed=True)
                     category.round_set.filter(seq__gte=seq).update(completed=False)
-        clear_cache_all_rounds(self.tournament)
+        clear_all_round_caches(self.tournament)
