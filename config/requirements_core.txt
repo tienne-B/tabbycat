@@ -32,7 +32,7 @@ channels==2.4.0                         # Channels; also includes the Daphne ser
 channels_redis==2.4.2                   # Channels Layer
 
 # For global
-django-tenants==3.2.1                   # Multi-tenancy with PostgreSQL schemas
+django-tenants==3.3.4                   # Multi-tenancy with PostgreSQL schemas
 stripe==2.49.0                          # Payments
 requests==2.24.0                        # Requests to subscribe to SNS
 
