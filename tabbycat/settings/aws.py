@@ -100,6 +100,7 @@ INSTALLED_APPS = (
     'polymorphic',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_better_admin_arrayfield',
     'registration',
 )
 
@@ -123,6 +124,7 @@ SHARED_APPS = (
     'polymorphic',
     'rest_framework',
     'rest_framework.authtoken',
+    'django_better_admin_arrayfield',
     'registration',
 )
 
