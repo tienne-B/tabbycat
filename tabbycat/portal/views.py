@@ -376,9 +376,9 @@ class StripeConnectWebhookView(View):
             except Payment.DoesNotExist:
                 return HttpResponse(status=204)
 
-        args.append(event['data']['object'])
-        if event['type'] in actions:
-            actions[event['type']](*args)
+            args.append(event['data']['object'])
+            if event['type'] in actions:
+                actions[event['type']](*args)
 
         return HttpResponse(status=200)
 
