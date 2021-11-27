@@ -16,6 +16,7 @@ from adjallocation.models import DebateAdjudicator
 from adjfeedback.models import AdjudicatorFeedback
 from draw.models import DebateTeam
 from results.prefetch import populate_confirmed_ballots
+from results.result import get_result_class
 from tournaments.models import Round
 
 from .utils import expected_feedback_targets
@@ -84,8 +85,9 @@ class FeedbackExpectedSubmissionFromTeamTracker(BaseFeedbackExpectedSubmissionTr
         enforced, so instead we just expect it to be on any adjudicator on the
         panel."""
 
-        if self.enforce_orallist and self.source.debate.confirmed_ballot:
-            majority = self.source.debate.confirmed_ballot.result.majority_adjudicators()
+        ballot = self.source.debate.confirmed_ballot
+        if self.enforce_orallist and ballot and get_result_class(ballot, self.source.debate.round).is_voting:
+            majority = ballot.result.majority_adjudicators()
             chair = self.source.debate.adjudicators.chair
             if chair in majority:
                 return [chair]
