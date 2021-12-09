@@ -2,6 +2,8 @@
 import random
 import logging
 
+from django.db.models import Q
+
 logger = logging.getLogger(__name__)
 
 
@@ -24,17 +26,22 @@ def set_emoji(teams, tournament):
         team.save()
 
 
-def pick_unused_emoji():
-    """Picks an emoji that is not already in use by any team in the database. If
-    no emoji are left, it returns `None`."""
+def pick_unused_emoji(tournament=None):
+    """Picks an emoji that is not already in use by any team in the database.
+    If no emoji are left, it returns `None`."""
     from .models import Team
-    used_emoji = Team.objects.filter(emoji__isnull=False).values_list('emoji', flat=True)
+
+    emoji_filter = Q(emoji__isnull=False)
+    if tournament is not None:
+        emoji_filter &= Q(tournament=tournament)
+
+    used_emoji = Team.objects.filter(emoji_filter).values_list('emoji', flat=True)
     unused_emoji = [e for e in EMOJI_RANDOM_OPTIONS if e[0] not in used_emoji]
 
     try:
         return random.choice(unused_emoji)
     except IndexError:
-        return None
+        return (None, None)
 
 
 def populate_code_names_from_emoji(teams, overwrite=True):
