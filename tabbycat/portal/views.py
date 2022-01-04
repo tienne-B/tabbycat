@@ -216,7 +216,7 @@ class InstanceBackupsActionView(AssistantMixin, ClientObjectMixin, FormView):
 class CreateInstanceFormView(AssistantMixin, FormView):
     template_name = 'create_instance_form.html'
     form_class = InstanceCreationForm
-    initial = {'currency': 'cad'}
+    initial = {'currency': 'usd'}
 
     def get_context_data(self, **kwargs):
         kwargs['STRIPE_PUBLIC_KEY'] = settings.STRIPE_PUBLISH_KEY

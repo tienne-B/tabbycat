@@ -17,6 +17,14 @@ class Client(TenantMixin):
         ('aud', _("Australian Dollar")),
         ('cad', _("Canadian Dollar")),
         ('eur', _("European Euro")),
+        ('gbp', _("British Pound")),
+        ('ron', _("Romanian Leu")),
+        ('sgd', _("Singapore Dollar")),
+        ('usd', _("United States Dollar")),
+    )
+
+    NON_CONVERT_CURR = (
+        ('cad', _("Canadian Dollar")),
         ('usd', _("United States Dollar")),
     )
 

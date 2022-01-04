@@ -34,6 +34,9 @@ class InstanceCreationForm(forms.ModelForm):
     backups = forms.BooleanField(label=_("Enable backups and recovery (price +100%)"), required=False,
         help_text=_("Allows the creation of backups of the site (including automated backups after each round) "
             "and the recovery of the site from those backups. For large tournaments."))
+    currency = forms.ChoiceField(label=_("Currency"), choices=Client.NON_CONVERT_CURR,
+        help_text=_("Calico supports payment in various currencies to avoid conversion fees. Other currencies "
+            "can be available by request."))
 
     class Meta:
         model = Client
