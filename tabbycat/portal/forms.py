@@ -128,7 +128,6 @@ class BackupInstanceForm(forms.ModelForm):
 
 
 class InstanceBackupSelectionForm(forms.Form):
-
     def __init__(self, *args, **kwargs):
         self.backups = kwargs.pop('backups')
         super().__init__(*args, **kwargs)
@@ -140,7 +139,7 @@ class InstanceBackupSelectionForm(forms.Form):
 
 
 class CurrencySelectionForm(forms.Form):
-    currency = forms.ChoiceField(choices=Client.CURRENCIES, label=_("Currency"),
+    currency = forms.ChoiceField(choices=Client.NON_CONVERT_CURR, label=_("Currency"),
         help_text=_("Calico supports payment in various currencies to avoid conversion fees."))
     qtd = forms.IntegerField(min_value=1, initial=1, label=_("Quantity"),
         help_text=_("Increase the site's limit by how many tournaments"))
