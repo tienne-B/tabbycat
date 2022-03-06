@@ -279,9 +279,15 @@ class InvoicedCreateInstanceFormView(AssistantMixin, FormView):
         return get_instance_url(self.request, self.instance)
 
 
-class IncreaseSiteLimitView(ClientObjectMixin, CreateInstanceFormView):
+class IncreaseSiteLimitView(CreateInstanceFormView):
     template_name = 'pay_tournament_form.html'
     form_class = CurrencySelectionForm
+
+    @property
+    def client(self):
+        if not hasattr(self, "_client"):
+            self._client = get_object_or_404(Client, schema_name=self.kwargs['schema'])
+        return self._client
 
     def get_context_data(self, **kwargs):
         kwargs['client'] = self.client
@@ -290,9 +296,9 @@ class IncreaseSiteLimitView(ClientObjectMixin, CreateInstanceFormView):
     def form_valid(self, form):
         currency, qtd = form.save()
         currency_amounts = {
-            'aud': 5500,
+            # 'aud': 5500,
             'cad': 5000,
-            'eur': 3500,
+            # 'eur': 3500,
             'usd': 4000,
         }
         customer = stripe.Customer.create(email=self.request.user.email)
