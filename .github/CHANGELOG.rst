@@ -2,6 +2,26 @@
 Change Log
 ==========
 
+2.6.6
+-----
+*Release date: 27 February 2022*
+
+- Updated Heroku install documentation to foreground the script-based install
+- Fixed reporting of Tabbycat's version and host
+
+
+2.6.5
+-----
+*Release date: 14 February 2022*
+
+- Fix broken link preventing public ballots list from loading (BACKEND-69E)
+- Fix motions being incorrectly imported through DebateXML (BACKEND-6TZ)
+- Fix broken link for assistants merging faulty ballots (BACKEND-6RD)
+- Changed filter for team draw notifications to be whether they are in a debate that round
+- Made round break category and stage validator work with partial updates
+- Launched our promotion program for sponsors of the Tabbycat Debate Organisation
+
+
 2.6.4
 -----
 *Release date: 24 December 2021*
