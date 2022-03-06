@@ -67,6 +67,8 @@ Your payment is currently being processed.
 {% block js %}
 {{ block.super }}
 <script>
+document.getElementById("id_timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 let currencies = {
   "aud": 55,
   "cad": 50,
