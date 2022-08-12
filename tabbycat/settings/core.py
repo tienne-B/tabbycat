@@ -11,7 +11,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Overwritten in local.py or heroku.py
 # ==============================================================================
 
-ADMINS = ('Philip and Chuan-Zheng', 'tabbycat@philipbelesky.com'),
+ADMINS = ('Tabbycat Debate', 'contact@tabbycat-debate.org'),
 MANAGERS = ADMINS
 DEBUG = bool(int(os.environ['DEBUG'])) if 'DEBUG' in os.environ else False
 ENABLE_DEBUG_TOOLBAR = False # Must default to false; overriden in Dev config
@@ -22,9 +22,9 @@ SECRET_KEY = r'#2q43u&tp4((4&m3i8v%w-6z6pp7m(v0-6@w@i!j5n)n15epwc'
 # Version
 # ==============================================================================
 
-TABBYCAT_VERSION = '2.6.6-c'
-TABBYCAT_CODENAME = 'Ocicat - Calico'
-READTHEDOCS_VERSION = 'v2.6.6'
+TABBYCAT_VERSION = '2.7.0-dev.c'
+TABBYCAT_CODENAME = 'Pixie-bob - Calico'
+READTHEDOCS_VERSION = 'v2.7.0'
 
 # ==============================================================================
 # Internationalization and Localization
@@ -91,6 +91,7 @@ FORMAT_MODULE_PATH = [
 MIDDLEWARE = [
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     # User language preferences; must be after Session
     'django.middleware.locale.LocaleMiddleware',
@@ -224,7 +225,7 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ==============================================================================
 # Logging
@@ -308,7 +309,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Channels
 # ==============================================================================
 
-ASGI_APPLICATION = "routing.application"
+ASGI_APPLICATION = "asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {

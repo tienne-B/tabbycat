@@ -18,6 +18,7 @@ from .allocators.hungarian import ConsensusHungarianAllocator, VotingHungarianAl
 from .models import PreformedPanel
 from .preformed import copy_panels_to_debates
 from .preformed.anticipated import calculate_anticipated_draw
+from .preformed.direct import DirectPreformedPanelAllocator
 from .preformed.hungarian import HungarianPreformedPanelAllocator
 from .serializers import (EditPanelAdjsPanelSerializer,
                           SimpleDebateAllocationSerializer, SimpleDebateImportanceSerializer,
@@ -38,7 +39,7 @@ class AdjudicatorAllocationWorkerConsumer(EditDebateOrPanelWorkerMixin):
     def _apply_allocation_settings(self, round, settings):
         t = round.tournament
         for key, value in settings.items():
-            if key == "usePreformedPanels":
+            if key in ("usePreformedPanels", "allocationMethod"):
                 # Passing this here is much easier than splitting the function
                 continue # (Not actually a preference; just a toggle from Vue)
             # No way to force front-end to only accept floats/integers :(
@@ -75,7 +76,10 @@ class AdjudicatorAllocationWorkerConsumer(EditDebateOrPanelWorkerMixin):
 
             debates = round.debate_set.all()
             panels = round.preformedpanel_set.all()
-            allocator = HungarianPreformedPanelAllocator(debates, panels, round)
+            if event['extra']['settings']['allocationMethod'] == 'hungarian':
+                allocator = HungarianPreformedPanelAllocator(debates, panels, round)
+            else:
+                allocator = DirectPreformedPanelAllocator(debates, panels, round)
 
             debates, panels = allocator.allocate()
             copy_panels_to_debates(debates, panels)
