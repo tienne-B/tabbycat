@@ -1,7 +1,6 @@
 import os
 
 import django
-from channels.auth import AuthMiddlewareStack
 from channels.routing import ChannelNameRouter, ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from django.urls import re_path
@@ -14,6 +13,8 @@ from adjallocation.consumers import AdjudicatorAllocationWorkerConsumer, PanelEd
 from checkins.consumers import CheckInEventConsumer # noqa: E402 (has to come after settings)
 from draw.consumers import DebateEditConsumer # noqa: E402 (has to come after settings)
 from notifications.consumers import NotificationQueueConsumer # noqa: E402 (has to come after settings)
+from portal.consumers import DatabaseBackupConsumer, PortalQueueConsumer # noqa: E402 (has to come after settings)
+from portal.middleware import AuthMiddlewareStack # noqa: E402 (has to come after settings)
 from results.consumers import BallotResultConsumer, BallotStatusConsumer # noqa: E402 (has to come after settings)
 from venues.consumers import VenuesWorkerConsumer # noqa: E402 (has to come after settings)
 
@@ -41,6 +42,8 @@ application = ProtocolTypeRouter({
     "channel": ChannelNameRouter({
         # Name used in runworker cmd : SyncConsumer responsible
         "notifications":  NotificationQueueConsumer.as_asgi(), # Email sending
+        "portal": PortalQueueConsumer.as_asgi(),  # For creating schemas
+        "backups": DatabaseBackupConsumer.as_asgi(),  # For creating DB backups
         "adjallocation": AdjudicatorAllocationWorkerConsumer.as_asgi(),
         "venues": VenuesWorkerConsumer.as_asgi(),
     }),
