@@ -36,6 +36,9 @@ honcho = "*"
 gunicorn = "*"
 sentry-sdk = "*"
 whitenoise = "*"
+django-tenants = "*"
+stripe = "*"
+requests = "*"
 
 [dev-packages]
 pre-commit = "*"
