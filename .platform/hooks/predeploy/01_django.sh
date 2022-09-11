@@ -1,8 +1,10 @@
 #!/bin/bash
-source /var/app/venv/*/bin/activate
 cd /var/app/staging/tabbycat
-export PYTHONPATH=/var/app/venv/staging-LQM1lest/bin:/var/app/staging/tabbycat
+pipenv shell
+# export PYTHONPATH=/var/app/venv/staging-LQM1lest/bin:/var/app/staging/tabbycat
 export DJANGO_SETTINGS_MODULE=settings
+
+echo $PYTHONPATH
 
 echo "-----> Running database migration - Skipped"
 #python manage.py migrate_schemas --noinput

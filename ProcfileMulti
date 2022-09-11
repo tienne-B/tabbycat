@@ -1,7 +1,2 @@
-# This is the 'actual' Procfile run by heroku (via Honcho)
-
-# WSGI server handles the standard django routes; optimised for high performance
 wsgi: gunicorn tabbycat.wsgi:application --bind :8000 --config './config/gunicorn.conf'
-
-# ASGI server handles the asychronous routes (websockets)
 asgi: daphne -b 0.0.0.0 -p 5000 tabbycat.asgi:application
