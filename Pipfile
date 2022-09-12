@@ -39,6 +39,7 @@ whitenoise = "*"
 django-tenants = "*"
 stripe = "*"
 requests = "*"
+"backports.zoneinfo" = "*"
 
 [dev-packages]
 pre-commit = "*"
