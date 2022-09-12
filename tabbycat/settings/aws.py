@@ -185,7 +185,7 @@ DYNAMIC_PREFERENCES = {
 # Channels
 # ==============================================================================
 
-ASGI_APPLICATION = "routing.application"
+ASGI_APPLICATION = "asgi.application"
 
 if 'REDIS_HOST' in os.environ:
     CHANNEL_LAYERS = {
