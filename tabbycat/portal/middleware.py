@@ -9,7 +9,7 @@ after the query, so the search_path gets reset.
 import pytz
 from channels.auth import _get_user_session_key, AuthMiddleware
 from channels.db import database_sync_to_async
-from channels.sessions import CookieMiddleware, SessionMiddleware, SessionMiddlewareInstance
+from channels.sessions import CookieMiddleware, InstanceSessionWrapper, SessionMiddleware
 from django.conf import settings
 from django.contrib.auth import BACKEND_SESSION_KEY, HASH_SESSION_KEY, load_backend
 from django.contrib.auth.models import AnonymousUser
@@ -89,29 +89,35 @@ def get_user(scope):
 
 class TenantSessionMiddleware(SessionMiddleware):
 
-    def __call__(self, scope):
-        return TenantSessionMiddlewareInstance(scope, self)
-
-
-class TenantSessionMiddlewareInstance(SessionMiddlewareInstance):
-
-    async def __call__(self, receive, send):
+    async def __call__(self, scope, receive, send):
         """
-        We intercept the send() callable so we can do session saves and
-        add session cookie overrides to send back.
+        Instantiate a session wrapper for this scope, resolve the session and
+        call the inner application.
         """
-        # Resolve the session now we can do it in a blocking way
-        session_key = self.scope["cookies"].get(self.middleware.cookie_name)
-        self.scope["session"]._wrapped = await database_sync_to_async(self.get_session_store())(session_key)
-        # Override send
-        self.real_send = send
-        return await self.inner(receive, self.send)
+        wrapper = TenantInstanceSessionWrapper(scope, send)
+
+        await wrapper.resolve_session()
+
+        return await self.inner(wrapper.scope, receive, wrapper.send)
+
+
+class TenantInstanceSessionWrapper(InstanceSessionWrapper):
+
+    async def resolve_session(self):
+        session_key = self.scope["cookies"].get(self.cookie_name)
+        self.scope["session"]._wrapped = await database_sync_to_async(
+            self.get_session_store(),
+        )(session_key)
 
     def get_session_store(self):
         def _session_store(*args, **kwargs):
             with schema_context(self.scope['schema']):
-                return self.middleware.session_store(*args, **kwargs)
+                return self.session_store(*args, **kwargs)
         return _session_store
+
+    def save_session(self):
+        with schema_context(self.scope['schema']):
+            super().save_session()
 
 
 class TenantAuthMiddleware(AuthMiddleware):
