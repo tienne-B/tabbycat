@@ -50,7 +50,7 @@ class TenantSchemaMiddlewareInstance:
         headers = dict(self.scope.get('headers', []))
         if b"host" in headers:
             self.scope['schema'] = await get_schema(headers[b'host'].decode('ascii').split(":")[0])
-        return await self.inner(self.scope)(receive, send)
+        return await self.inner(self.scope, receive, send)
 
 
 @database_sync_to_async
