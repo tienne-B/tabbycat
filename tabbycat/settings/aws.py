@@ -29,7 +29,7 @@ DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
 )
 
-TENANT_LIMIT_SET_CALLS = True
+TENANT_LIMIT_SET_CALLS = False
 
 # ==============================================================================
 # Django-specific Modules
