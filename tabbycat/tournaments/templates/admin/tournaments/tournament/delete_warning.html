@@ -1,0 +1,38 @@
+{% load i18n %}
+
+<div id="debate-team-warning" style="background-color: #f0dada; padding: 15px 15px 5px; margin-bottom: 20px; border-radius: 4px;">
+  <p style="font-weight: bold; color: #c14747;">
+  {% blocktrans trimmed %}
+  STOP!!! Deleting tournaments will not let you create others!
+  {% endblocktrans %}
+  </p>
+  <p>
+  {% blocktrans trimmed %}
+  The tournament limit for the site will be reduced by the number of tournaments you are deleting. The tournament slot cannot be used for another tournament. You may increase the tournament limit of the site for a fee on the <a href="/">home page</a>.
+  {% endblocktrans %}
+  </p>
+</div>
+
+<style>
+
+  /* The base CSS uses #content>h1+p+h2+ul to detect the "Summary" list.
+  Our adding three <p> elements breaks this, so we add a copy of the
+  CSS specification that's targeted at the same elements. */
+
+  .delete-confirmation #content>ul:nth-of-type(1) {
+    background: #f0dada;
+    color: #d49d9d;
+    border-radius: 4px;
+    border-radius: 0.28571rem;
+    padding: 20px;
+    padding: 1.42857rem;
+    list-style-type: none;
+    margin: 0;
+  }
+
+  .delete-confirmation #content>ul:nth-of-type(1) li {
+    list-style: none;
+    line-height: 1.8;
+  }
+
+</style>

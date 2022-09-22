@@ -1,0 +1,6 @@
+{% extends "admin/delete_confirmation.html" %}
+
+{% block content %}
+  {% include "admin/tournaments/tournament/delete_warning.html" %}
+  {{ block.super }}
+{% endblock %}
