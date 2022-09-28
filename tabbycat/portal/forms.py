@@ -5,6 +5,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm as BaseUserCreationForm
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db.models import Q
 from django.forms.widgets import DateInput, Select
 from django.utils.translation import gettext_lazy as _
@@ -31,6 +32,8 @@ class UserCreationForm(BaseUserCreationForm):
 
 
 class InstanceCreationForm(forms.ModelForm):
+    schema_name = forms.CharField(label=_("Subdomain Slug"), validators=[RegexValidator("^[A-Za-z0-9]+$")],
+        help_text=_("The name used in the URL of the site, e.g. subdomain.calicotab.com. Must be alphanumeric."))
     backups = forms.BooleanField(label=_("Enable backups and recovery (price +100%)"), required=False,
         help_text=_("Allows the creation of backups of the site (including automated backups after each round) "
             "and the recovery of the site from those backups. For large tournaments."))
@@ -41,12 +44,6 @@ class InstanceCreationForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ("name", "schema_name", "backups", "timezone", "currency")
-        labels = {
-            "schema_name": _("Slug"),
-        }
-        help_texts = {
-            "schema_name": _("The name used in the URL of the site. Must be alphanumeric."),
-        }
         widgets = {
             "end_date": CalendarDateInputWidget,
             "timezone": DatalistWidget,
@@ -61,7 +58,7 @@ class InstanceCreationForm(forms.ModelForm):
     def clean_schema_name(self):
         name = self.cleaned_data['schema_name']
         main_domain = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
-        if Client.objects.filter(Q(schema_name=name) | Q(domains__domain=name + main_domain)).exists():
+        if Client.objects.filter(Q(schema_name=name) | Q(domains__domain=name + "." + main_domain)).exists():
             raise ValidationError(_("A site with that slug already exists!"))
         return name
 
