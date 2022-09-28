@@ -8,7 +8,7 @@ import stripe
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _, gettext_lazy
@@ -223,42 +223,67 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         kwargs['main_domain'] = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
         return super().get_context_data(**kwargs)
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        if self.request.method in ('POST', 'PUT'):
-            kwargs['data'] = json.loads(self.request.body)
-        return kwargs
-
     def form_valid(self, form):
         self.object = form.save()
-        currency_amounts = {
-            'aud': 5500,
-            'cad': 5000,
-            'eur': 3500,
-            'usd': 4000,
+        main_domain = Instance.objects.get(tenant__schema_name='public', is_primary=True).domain
+        prices = {
+            'aud': {},
+            'cad': {
+                "site": "price_1HCeyxF87ztd0bejCVJb4jPu",
+                "backups": "price_1JeTswF87ztd0bejC9NTYsHn",
+            },
+            'eur': {},
+            'usd': {
+                "site": "price_1J329SF87ztd0bejVleIZLnI",
+                "backups": "price_1JeTswF87ztd0bejPz6ltaOq",
+            },
         }
-        customer = stripe.Customer.create(email=self.request.user.email)
-        intent = stripe.PaymentIntent.create(
-            amount=currency_amounts.get(self.object.currency, 5000) * (1 + int(self.object.plan == self.object.PRO_PLAN)),
+
+        items = [{
+            "price": prices[self.object.currency]["site"],
+            "quantity": 1,
+        }]
+        if self.object.plan == self.object.PRO_PLAN:
+            items.append({
+                "price": prices[self.object.currency]["backups"],
+                "quantity": 1,
+            })
+
+        customers = list(filter(lambda c: c['currency'] == self.object.currency, stripe.Customer.list(
+            email=self.request.user.email,
+        ).get('data', [])))
+        if len(customers) > 0:
+            customer = customers['data'][0]
+        else:
+            customer = stripe.Customer.create(email=self.request.user.email)
+
+        metadata = {
+            "product": "Calico Site",
+            "application": "portal",
+            "name": self.object.name,
+            "slug": self.object.schema_name,
+            "timezone": self.object.timezone,
+            "user": self.request.user.username,
+        }
+
+        session = stripe.checkout.Session.create(
+            success_url="https://%s.%s/" % (self.object.schema_name, main_domain),
+            cancel_url="https://%s/tournaments/new/" % (main_domain,),
+            line_items=items,
+            mode="payment",
             currency=self.object.currency,
-            description=self.object.name,
             customer=customer['id'],
-            metadata={
-                "product": "Calico Site",
-                "application": "portal",
-                "name": self.object.name,
-                "slug": self.object.schema_name,
-                "timezone": self.object.timezone,
-                "user": self.request.user.username,
+            metadata=metadata,
+            payment_intent_data={
+                "description": self.object.name,
+                "metadata": metadata,
             },
         )
-        self.object.payment_id = intent['id']
+        self.object.session_id = session['id']
+        self.object.payment_id = session['payment_intent']
         self.object.user = self.request.user
         self.object.save()
-        return JsonResponse({'clientSecret': intent['client_secret']})
-
-    def form_invalid(self, form):
-        return JsonResponse(form.errors.get_json_data(escape_html=True))
+        return HttpResponseRedirect(session['url'], status=303)
 
 
 class InvoicedCreateInstanceFormView(AssistantMixin, FormView):
@@ -295,27 +320,45 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
 
     def form_valid(self, form):
         currency, qtd = form.save()
-        currency_amounts = {
-            # 'aud': 5500,
-            'cad': 5000,
-            # 'eur': 3500,
-            'usd': 4000,
+        main_domain = self.client.domains.get(is_primary=True)
+        prices = {
+            'cad': "price_1JeTtxF87ztd0bejyYKMSMeq",
+            'usd': "price_1JeTtxF87ztd0bejup8vbBAh",
         }
-        customer = stripe.Customer.create(email=self.request.user.email)
-        intent = stripe.PaymentIntent.create(
-            amount=currency_amounts.get(currency, 5000) * qtd,
-            currency=currency,
-            description=self.client.name + ": +Tournament",
-            customer=customer['id'],
-            metadata={
-                "product": "Extra Tournament",
-                "application": "tournament",
-                "slug": self.client.schema_name,
-                "user": self.request.user.username,
+
+        customers = list(filter(lambda c: c['currency'] == self.object.currency, stripe.Customer.list(
+            email=self.request.user.email,
+        ).get('data', [])))
+        if len(customers) > 0:
+            customer = customers['data'][0]
+        else:
+            customer = stripe.Customer.create(email=self.request.user.email)
+
+        metadata = {
+            "product": "Extra Tournament",
+            "application": "tournament",
+            "slug": self.client.schema_name,
+            "user": self.request.user.username,
+            "quantity": qtd,
+        }
+
+        session = stripe.checkout.Session.create(
+            success_url="https://%s/" % (main_domain,),
+            cancel_url="https://%s/" % (main_domain,),
+            line_items=[{
+                "price": prices[currency],
                 "quantity": qtd,
+            }],
+            mode="payment",
+            currency=currency,
+            customer=customer['id'],
+            metadata=metadata,
+            payment_intent_data={
+                "description": "%s: + %d Tournament" % (self.client.name, qtd),
+                "metadata": metadata,
             },
         )
-        return JsonResponse({'clientSecret': intent['client_secret']})
+        return HttpResponseRedirect(session['url'], status=303)
 
 
 class StripeWebhookView(View):

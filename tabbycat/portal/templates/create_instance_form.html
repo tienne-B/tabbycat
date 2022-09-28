@@ -10,18 +10,6 @@
 
 {% block nav %}{% endblock %}
 
-{% block page-alerts %}
-{% blocktrans trimmed asvar message %}
-Your payment has been received and your Tabbycat site is currently being set up. It will be available shortly (in around a minute) at <a></a>.
-{% endblocktrans %}
-{% include "components/alert.html" with type="success" %}
-
-{% blocktrans trimmed asvar message %}
-Your payment is currently being processed.
-{% endblocktrans %}
-{% include "components/alert.html" with type="warning" %}
-{% endblock %}
-
 {% block content %}
 
 <div class="row">
@@ -29,7 +17,7 @@ Your payment is currently being processed.
   <div class="col-lg-8 ml-lg-auto mr-md-auto">
 
     <div class="card">
-      <form id="create_instance">
+      <form action="." method="POST">
       {% csrf_token %}
 
         {% trans "Create Tabbycat Site" context "page title" as title %}
@@ -42,16 +30,7 @@ Your payment is currently being processed.
 
         {% include "components/form-main.html" %}
 
-        <div class="list-group-item pt-3 pb-4">
-          <div class="form-group">
-            <label id="payment-info">{% trans "Payment information" %}</label>
-            <div id="card-element" class="form-control"></div>
-            <small class="form-text text-muted">{% trans "This fee goes to support the development of Tabbycat and Calico. No payment information is saved by Calico." %}</small>
-            <div id="card-errors" role="alert"></div>
-          </div>
-        </div>
-
-        {% trans "Create Site" context "button" as title %}
+        {% trans "Go to Payment" context "button" as title %}
         {% trans "Cancel and go back to the site home page" as subtitle %}
         {% url 'global-main-page' as suburl %}
         {% include "components/form-submit.html" %}
@@ -67,6 +46,7 @@ Your payment is currently being processed.
 {% block js %}
 {{ block.super }}
 <script>
+// Give initial timezone suggestion
 document.getElementById("id_timezone").value = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 let currencies = {
@@ -75,124 +55,15 @@ let currencies = {
   "eur": 35,
   "usd": 40
 }
-let paymentLabel = document.querySelector('label#payment-info');
+let paymentLabel = document.querySelector('button[name="continue"]');
 let updatePrice = (e) => {
   let currency = document.querySelector('#id_currency').value;
   var val = currencies[currency];
   if (document.querySelector("#id_backups").checked) { val *= 2; }
-  paymentLabel.innerText = '{% trans "Payment information" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + ")";
+  paymentLabel.innerText = '{% trans "Go to Payment" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + ")";
 };
 updatePrice();
 document.querySelector('#id_backups').addEventListener("change", updatePrice);
 document.querySelector('#id_currency').addEventListener("change", updatePrice);
-</script>
-<script>
-const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-// Create an instance of the Stripe object with your publishable API key
-var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
-let submitButton = document.querySelector('[name=continue]');
-submitButton.disabled = true;
-
-let successMessage = document.querySelector('.alert-success');
-successMessage.hidden = true;
-
-let processMessage = document.querySelector('.alert-warning');
-processMessage.hidden = true;
-
-// Stripe injects an iframe into the DOM
-var elements = stripe.elements();
-var style = {
-  base: {
-    color: "#32325d"
-  }
-};
-var card = elements.create("card", { style: style });
-card.mount("#card-element");
-card.on("change", function (event) {
-  // Disable the Pay button if there are no card details in the Element
-  submitButton.disabled = event.empty;
-  document.querySelector("#card-errors").textContent = event.error ? event.error.message : "";
-});
-
-var form = document.getElementById("create_instance");
-form.addEventListener("submit", function(event) {
-  event.preventDefault();
-  var data = {};
-  for (const e of form.elements) {
-    if (e.type === 'checkbox') {
-      data[e.name] = e.checked;
-    } else {
-      data[e.name] = e.value;
-    }
-    e.disabled = true;
-  }
-  delete data[""];
-  delete data["continue"];
-
-  fetch("{% url 'create-instance' %}", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      'X-CSRFToken': csrftoken
-    },
-    body: JSON.stringify(data)
-  }).then(result => {
-    return result.json();
-  }).then(data => {
-    if (data.clientSecret === undefined) {
-      Object.keys(data).forEach(k => {
-        document.querySelector("[name=" + k + "]").parentElement.innerHTML += data[k][0].message;
-      });
-      for (const e of form.elements) {
-        e.disabled = false;
-      }
-      loading(false);
-    } else {
-
-      payWithCard(stripe, card, data.clientSecret);
-    }
-  });
-});
-
-// Calls stripe.confirmCardPayment
-// If the card requires authentication Stripe shows a pop-up modal to
-// prompt the user to enter authentication details without leaving your page.
-var payWithCard = function(stripe, card, clientSecret) {
-  loading(true);
-  stripe.confirmCardPayment(clientSecret, {payment_method: {card: card}})
-  .then(result => {
-    if (result.error) {
-      showError(result.error.message);
-    } else {
-      orderComplete(result.paymentIntent.id);
-    }
-  });
-};
-/* ------- UI helpers ------- */
-// Shows a success message when the payment is complete
-var orderComplete = function(paymentIntentId) {
-  loading(false);
-  let url = "https://" + document.querySelector('[name=schema_name]').value + ".{{ main_domain }}";
-  let url_link = successMessage.querySelector("a");
-  url_link.setAttribute("href", url);
-  url_link.innerHTML = url;
-  successMessage.hidden = false;
-  submitButton.disabled = true;
-};
-// Show the customer the error from Stripe if their card fails to charge
-var showError = function(errorMsgText) {
-  loading(false);
-  var errorMsg = document.querySelector("#card-errors");
-  errorMsg.textContent = errorMsgText;
-  setTimeout(function() {
-    errorMsg.textContent = "";
-  }, 4000);
-};
-// Show a spinner on payment submission
-var loading = function(isLoading) {
-  submitButton.disabled = isLoading;
-  processMessage.hidden = !isLoading;
-};
 </script>
 {% endblock %}

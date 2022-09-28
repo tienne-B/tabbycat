@@ -43,9 +43,8 @@ class InstanceCreationForm(forms.ModelForm):
 
     class Meta:
         model = Client
-        fields = ("name", "schema_name", "backups", "timezone", "currency")
+        fields = ("name", "schema_name", "timezone", "backups", "currency")
         widgets = {
-            "end_date": CalendarDateInputWidget,
             "timezone": DatalistWidget,
         }
 
