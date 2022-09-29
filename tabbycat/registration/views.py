@@ -35,6 +35,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 class ListManagedObjectsView(AssistantMixin, VueTableTemplateView):
     page_title = gettext_lazy("My Managed")
     page_subtitle = gettext_lazy("Tournaments and institutions")
+    template_name = 'reg_vue_table.html'
 
     def get_institutions_table(self):
         table = BaseTableBuilder(view=self, title=_("My institutions"))
@@ -42,15 +43,15 @@ class ListManagedObjectsView(AssistantMixin, VueTableTemplateView):
 
         table.add_column({'key': 'name', 'title': _("Tournament")}, [{'text': i.tournament.name} for i in qs])
         table.add_column({'key': 'inst', 'title': _("Institution")}, [{'text': i.name,
-            'link': reverse_tournament('institution-index', i.tournament, kwargs={'institution_pk': i.pk})} for i in qs])
+            'link': reverse_tournament('admin-institution-detail', i.tournament, kwargs={'pk': i.pk})} for i in qs])
 
         return table
 
     def get_tournaments_table(self):
         table = BaseTableBuilder(view=self, title=_("My tournaments"))
-        qs = Tournament.objects.filter(manager=self.request.user).order_by('date')
+        qs = Tournament.objects.filter(managers=self.request.user).order_by('date')
         table.add_column({'key': 'name', 'title': _("Tournament")}, [{'text': t.name,
-            'link': reverse_tournament('admin-tournament-home', t)} for t in qs])
+            'link': reverse_tournament('tournament-home', t)} for t in qs])
         table.add_column({'key': 'inst', 'title': _("Date")}, [{'text': t.date} for t in qs])
 
         return table
