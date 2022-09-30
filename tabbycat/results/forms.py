@@ -134,6 +134,7 @@ class BaseResultForm(forms.Form):
     def __init__(self, ballotsub, password=False, *args, **kwargs):
         self.ballotsub = ballotsub
         self.result = kwargs.pop('result', self.result_class(self.ballotsub))
+        self.filled = kwargs.pop('filled', False)
         super().__init__(*args, **kwargs)
 
         self.debate = ballotsub.debate
@@ -364,7 +365,7 @@ class BaseBallotSetForm(BaseResultForm):
             else:
                 initial['motion'] = self.ballotsub.roundmotion
 
-        if self.ballotsub.id is not None:
+        if self.ballotsub.id is not None or self.filled:
             if self.using_vetoes:
                 for side in self.sides:
                     if self.vetos is None:
