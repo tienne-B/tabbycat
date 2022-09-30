@@ -326,7 +326,7 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
             'usd': "price_1JeTtxF87ztd0bejup8vbBAh",
         }
 
-        customers = list(filter(lambda c: c['currency'] == self.object.currency, stripe.Customer.list(
+        customers = list(filter(lambda c: c['currency'] == currency, stripe.Customer.list(
             email=self.request.user.email,
         ).get('data', [])))
         if len(customers) > 0:
