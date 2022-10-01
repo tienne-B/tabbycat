@@ -72,6 +72,6 @@
   "version": "3.18.1",
   "devDependencies": {
     "eslint-plugin-html": "^6.2.0",
-    "sass": "^1.52.2"
+    "sass": "^1.55.0"
   }
 }
