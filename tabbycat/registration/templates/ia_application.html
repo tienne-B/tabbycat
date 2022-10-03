@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block nav %}{% include "nav/reg_base_nav.html" %}{% endblock %}
+
+{% block content %}
+<form method="POST">
+  {% csrf_token %}
+
+  <div class="card mt-3">
+
+    {% include "components/form-main.html" with form=applicant_form %}
+    {{ formset.management_form }}
+
+  </div>
+  <div class="card mt-3" id="tournament-formset">
+    {% if formset.errors %}
+      {% include "components/form-errors.html" with errors=formset.non_form_errors %}
+    {% endif %}
+
+    {% for form in formset %}
+      {% include "components/form-main.html" %}
+    {% endfor %}
+
+    <div class="list-group-item pt-3 pb-3" id="submit-buttons">
+      <div class="row">
+        <div class="col">
+          <input class="btn btn-block btn-success" type="submit" name="submit" value="{{ save_text }}" />
+        </div>
+        <div class="col mt-md-0 mt-3">
+          <input class="btn btn-block btn-primary" name="add_more" value="{% trans 'Add another tournament' %}" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+{% block js %}
+{{ block.super }}
+<script>
+const fsContainer = document.querySelector("#tournament-formset")
+const formset = fsContainer.querySelector("div.list-group-item.pt-3.pb-4")
+const submitArea = fsContainer.querySelector("#submit-buttons")
+const nFormsCounter = document.querySelector('input[name="form-TOTAL_FORMS"]')
+const formRegex = RegExp(`form-(\\d){1}-`,'g')
+
+const wudcBreaks = ["No Breakeaste","Open PDOs","Open Octos","Open Quarters","Open Semis","Open Final","ESL Quarters","ESL Semis","ESL Final","EFL Semis","EFL Final"]
+const cmudeBreaks = ["No Breakeaste","Pre-octavos","Octavos","Cuartos","Semis","Final Open","Final ELE"]
+const otherBreaks = ["No Breakeaste","Octavos","Cuartos","Semis","Final Open","Final ELE","Semis Novates","Final Novates"]
+
+const addBreakOptions = (category, type) => {
+  switch (category) {
+    case "1": { // WUDC
+      return wudcBreaks.map(b => {
+        const option = document.createElement('option');
+        option.value = b === "No Breakeaste" ? '' : b
+        option.textContent = b
+        return option
+      })
+    }
+    case "2": { // CMUDE
+      return cmudeBreaks.map(b => {
+        const option = document.createElement('option');
+        option.value = b === "No Breakeaste" ? '' : b
+        option.textContent = b
+        return option
+      })
+    }
+    default: { // WUDC
+      return otherBreaks.map(b => {
+        const option = document.createElement('option');
+        option.value = b === "No Breakeaste" ? '' : b
+        option.textContent = b
+        return option
+      })
+    }
+  }
+}
+
+const animateForm = function(form) {
+  const [category, name, year, role, bp, rooms, lastRound, lastRoundC] = form.querySelectorAll(".form-group")
+
+  const lastRoundField = lastRound.querySelector("select")
+  const lastRoundCField = lastRoundC.querySelector("select")
+  const roleField = role.querySelector("select")
+
+  category.hidden = false
+  name.hidden = false
+  year.hidden = false
+  role.hidden = false
+  bp.hidden = false
+  rooms.hidden = false
+  lastRound.hidden = roleField.value === ''
+  lastRoundC.hidden = roleField.value === ''
+
+  role.addEventListener('change', (e) => {
+    lastRoundField.querySelectorAll('option').forEach(option => option.remove())
+    lastRoundCField.querySelectorAll('option').forEach(option => option.remove())
+    addBreakOptions(category.querySelector("select").value, 'a').forEach(b => {
+      lastRoundField.add(b)
+    })
+    addBreakOptions(category.querySelector("select").value, 'a').forEach(b => {
+      lastRoundCField.add(b)
+    })
+    if (e.target?.value === 's') {
+      lastRoundC.hidden = true
+      lastRound.querySelector("label").textContent = "¿Cuál fue la última ronda a la que llegaste?"
+      lastRoundCField.querySelectorAll('option').forEach(option => option.remove())
+      lastRound.hidden = false
+    } else if (['a', 'c'].includes(e.target?.value)) {
+      lastRound.querySelector("label").textContent = "¿Cuál fue la última ronda eliminatoria que juzgaste (como panel o principal)?"
+      lastRoundC.querySelector("label").textContent = "¿Cuál fue la última ronda eliminatoria que juzgaste como PRINCIPAL?"
+      lastRound.hidden = false
+      lastRoundC.hidden = false
+    }
+  })
+
+  category.addEventListener('change', (e) => {
+    if (e.target.value === '') {
+      name.hidden = false
+      bp.hidden = false
+      rooms.hidden = false
+    } else {
+      name.hidden = true
+      name.getElementsByTagName("input")[0].value = e.target.querySelector('[value="' + e.target.value + '"]').textContent
+      bp.hidden = true
+      rooms.hidden = true
+      rooms.getElementsByTagName("select")[0].value = "40"
+    }
+    role.dispatchEvent(new Event("change"))
+  })
+}
+
+animateForm(formset)
+
+const addTournament = function (e) {
+  e.preventDefault()
+  const formN = nFormsCounter.value
+  nFormsCounter.value = Number(nFormsCounter.value) + 1
+
+  let newForm = formset.cloneNode(true)
+  newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formN}-`)
+  animateForm(newForm)
+  fsContainer.insertBefore(newForm, submitArea)
+}
+submitArea.querySelector('[name="add_more"]').addEventListener('click', addTournament)
+</script>
+{% endblock %}

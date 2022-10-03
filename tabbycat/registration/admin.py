@@ -3,7 +3,8 @@ from dynamic_preferences.admin import PerInstancePreferenceAdmin
 
 from portal.admin import HideFromTenantsMixin
 
-from .models import Adjudicator, Institution, Payment, Speaker, SpeakerCategory, Team, Tournament, TournamentPreferenceModel
+from .models import (Adjudicator, IAApplicant, IATournament, IATournamentCategory, Institution, Payment,
+    Speaker, SpeakerCategory, Team, Tournament, TournamentPreferenceModel)
 
 
 @admin.register(Tournament)
@@ -61,3 +62,24 @@ class PaymentAdmin(HideFromTenantsMixin, admin.ModelAdmin):
     list_select_related = ('tournament', 'institution')
     search_fields = ('payment_intent',)
     list_filter = ('tournament',)
+
+
+@admin.register(IAApplicant)
+class IAApplicantAdmin(HideFromTenantsMixin, admin.ModelAdmin):
+    list_display = ('name', 'email', 'tournament')
+    list_select_related = ('tournament',)
+    list_filter = ('tournament',)
+
+
+@admin.register(IATournamentCategory)
+class IATournamentCategoryAdmin(HideFromTenantsMixin, admin.ModelAdmin):
+    list_display = ('name', 'priority', 'tournament')
+    list_select_related = ('tournament',)
+    list_filter = ('tournament',)
+
+
+@admin.register(IATournament)
+class IATournamentAdmin(HideFromTenantsMixin, admin.ModelAdmin):
+    list_display = ('name', 'application', 'category', 'year')
+    list_select_related = ('application', 'category')
+    list_filter = ('application',)

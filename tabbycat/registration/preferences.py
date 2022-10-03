@@ -171,3 +171,11 @@ class RequireInstitutionRegistration(BooleanPreference):
     help_text = _("Require institutions to request slots before registration")
     name = 'require_slots'
     default = False
+
+
+@tournament_preferences_registry.register
+class EnableIAApplications(BooleanPreference):
+    verbose_name = _("Enable applications for IA status")
+    help_text = _("Enables applicants to fill out a tournament CV")
+    name = 'enable_ia_applications'
+    default = False

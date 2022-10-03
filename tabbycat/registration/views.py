@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q, Sum, Value
 from django.db.models.functions import Coalesce
+from django.forms import modelformset_factory
 from django.http import HttpResponseRedirect
 from django.http.response import Http404
 from django.utils.translation import gettext as _, gettext_lazy, ngettext
@@ -12,15 +13,16 @@ from django.views.generic import TemplateView, View
 from django.views.generic.edit import CreateView, FormView
 from dynamic_preferences.views import PreferenceFormView
 
+from adjfeedback.views import BaseCsvView
 from utils.misc import reverse_tournament
 from utils.mixins import AssistantMixin
 from utils.tables import BaseTableBuilder
 from utils.views import ModelFormSetView, PostOnlyRedirectView, VueTableTemplateView
 
 from .forms import (AdjudicatorDetailsForm, CreateInstitutionForm, CreateTournamentFromURL,
-    InstitutionApproveForm, TeamDetailsForm, tournament_preference_form_builder)
+    IADetailsForm, IATournamentForm, InstitutionApproveForm, TeamDetailsForm, tournament_preference_form_builder)
 from .mixins import AdminMixin, InstitutionMixin, PaymentSessionMixin, RegistrationFormTitlesMixin, TournamentMixin
-from .models import Adjudicator, Discount, Institution, Payment, Person, SpeakerCategory, Team, Tournament
+from .models import Adjudicator, Discount, IATournament, Institution, Payment, Person, SpeakerCategory, Team, Tournament
 from .preferences import AdjudicatorsPerTeamRule
 from .registries import tournament_preferences_registry
 from .serializers import AdjudicatorSerializer, InstitutionSerializer, TeamSerializer
@@ -671,3 +673,363 @@ class SuccessPaymentView(TournamentMixin, View):
     def get(self, request, *args, **kwargs):
         messages.success(request, _("Your payment has been received."))
         return HttpResponseRedirect(reverse_tournament("tournament-home", self.tournament))
+
+
+class IAApplicationView(TournamentMixin, RegistrationFormTitlesMixin, TemplateView):
+    template_name = 'ia_application.html'
+    form_title = gettext_lazy('IA Application')
+    save_text = gettext_lazy('Submit')
+
+    def get_details_form(self, data=None):
+        return IADetailsForm(tournament=self.tournament, data=data)
+
+    def get_formset_class(self, extra=1):
+        return modelformset_factory(IATournament, form=IATournamentForm, extra=extra)
+
+    def get_context_data(self, **kwargs):
+        kwargs['applicant_form'] = kwargs.get('applicant_form') or self.get_details_form()
+        kwargs['formset'] = kwargs.get('formset') or self.get_formset_class()()
+        return super().get_context_data(**kwargs)
+
+    def get_success_url(self):
+        messages.success(self.request, _("Your application has been received"))
+        return reverse_tournament('tournament-home', self.tournament)
+
+    def form_valid(self, form, formset):
+        applicant = form.save()
+        for tournament_form in formset.extra_forms:
+            tournament_form.application = applicant
+        formset.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def form_invalid(self, form, formset):
+        return self.render_to_response(self.get_context_data(applicant_form=form, formset=formset))
+
+    def post(self, request, *args, **kwargs):
+        data = request.POST.copy()
+        detail_form = IADetailsForm(tournament=self.tournament, data={
+            'name': data.pop('name', '')[0],
+            'email': data.pop('email', '')[0],
+        })
+        tournaments_form_class = modelformset_factory(IATournament,
+            form=IATournamentForm,
+            extra=int(data['form-TOTAL_FORMS']),
+        )
+        tournaments_form = tournaments_form_class(data=data)
+        if detail_form.is_valid() and tournaments_form.is_valid():
+            return self.form_valid(detail_form, tournaments_form)
+        else:
+            return self.form_invalid(detail_form, tournaments_form)
+
+
+class IAApplicationMixin:
+
+    round_values = {
+        '': 0,
+        'Open PDOs': 1,
+        'Open Octos': 2,
+        'Open Quarters': 3,
+        'Open Semis': 4,
+        'Open Final': 5,
+        'ESL Quarters': 2,
+        'ESL Semis': 3,
+        'ESL Final': 5,
+        'EFL Semis': 3,
+        'EFL Final': 5,
+        'Pre-octavos': 1,
+        'Octavos': 2,
+        'Cuartos': 3,
+        'Semis': 4,
+        'Final Open': 5,
+        'Final ELE': 4,
+        'Semis Novates': 3,
+        'Final Novates': 4,
+    }
+
+    priorities = {
+        "A": {
+            'adj': {
+                'count': 1,
+                'breaks': [0, 5, 5.5, 6],
+                'progression': [0, 0, 0, 0.5, 1, 1.5],
+                'chair': 1,
+                'cap': 0.5,
+            },
+            'spk': {
+                'breaks': [0, 5, 5.5, 6],
+                'progression': [0, 0, 0, 0.5, 1, 1.5],
+                'size': lambda r: 0,
+            },
+        },
+        "B+": {
+            'adj': {
+                'count': 1,
+                'breaks': [0, 4.5, 5, 5.5],
+                'progression': [0, 0, 0, 0, 1, 1.5],
+                'chair': 1,
+                'cap': 0.5,
+            },
+            'spk': {
+                'breaks': [0, 4.5, 5, 5.5],
+                'progression': [0, 0, 0, 0, 1, 1.5],
+                'size': lambda r: 0,
+            },
+        },
+        "B": {
+            'adj': {
+                'count': 1,
+                'breaks': [0, 4, 4.5, 5],
+                'progression': [0, 0, 0, 0, 1, 1.5],
+                'chair': 0.5,
+                'cap': 0.5,
+            },
+            'spk': {
+                'breaks': [0, 4, 4.5, 5],
+                'progression': [0, 0, 0, 0, 1, 1.5],
+                'size': lambda r: 0,
+            },
+        },
+        "C": {
+            'adj': {
+                'count': 1,
+                'breaks': [0, 3, 3.5, 4],
+                'progression': [0, 0, 0, 0, 0, 0],
+                'chair': 0.5,
+                'cap': 0.5,
+            },
+            'spk': {
+                'breaks': [0, 3, 3.5, 4],
+                'progression': [0, 0, 0, 0, 0, 0],
+                'size': lambda r: (r >= 30) * 0.5 + (r >= 40) * 0.5,
+            },
+        },
+        "D": {
+            'adj': {
+                'count': 1,
+                'breaks': [0, 2, 2.5, 3],
+                'progression': [0, 0, 0, 0, 0, 0],
+                'chair': 0,
+                'cap': 0.5,
+            },
+            'spk': {
+                'breaks': [0, 2, 2.5, 3],
+                'progression': [0, 0, 0, 0, 0, 0],
+                'size': lambda r: (r >= 10) * 0.5,
+            },
+        },
+        "E": {
+            'adj': {
+                'count': 1,
+                'breaks': [0, 1, 1.5, 2],
+                'progression': [0, 0, 0, 0, 0, 0],
+                'chair': 0,
+                'cap': 0.5,
+            },
+            'spk': {
+                'breaks': [0, 1, 1.5, 2],
+                'progression': [0, 0, 0, 0, 0, 0],
+                'size': lambda r: 0,
+            },
+        },
+    }
+
+    def calc_adj_score(self, scores, coeffs):
+        return bool(scores['count']) * coeffs['count'] \
+            + coeffs['breaks'][min(3, scores['breaks'])] \
+            + coeffs['progression'][self.round_values[scores['progression']]] \
+            + bool(scores['chair']) * coeffs['chair'] \
+            + bool(scores['cap']) * coeffs['cap']
+
+    def calc_spk_score(self, scores, coeffs):
+        return coeffs['breaks'][min(3, scores['breaks'])] \
+            + coeffs['progression'][self.round_values[scores['progression']]] \
+            + coeffs['size'](scores['size'])
+
+    def percolate_scores(self, adj_prev, spk_prev, adj_scores, spk_scores):
+        if adj_prev is not None:
+            for field in ('count', 'breaks', 'chair', 'cap'):
+                adj_scores[field] += adj_prev[field]
+            if (self.round_values[adj_scores['progression']] < self.round_values[adj_prev['progression']]):
+                adj_scores['progression'] = adj_prev['progression']
+        if spk_prev is not None:
+            spk_scores['count'] += spk_prev['count']
+            spk_scores['breaks'] += spk_prev['breaks']
+            spk_scores['size'] = max(spk_scores['size'], spk_prev['size'])
+            if (self.round_values[spk_scores['progression']] < self.round_values[spk_prev['progression']]):
+                spk_scores['progression'] = spk_prev['progression']
+        return adj_scores, spk_scores
+
+    def get_priority(self, tournament):
+        priority = getattr(tournament.category, 'priority', None)
+        if priority is None:
+            if not tournament.in_bp:
+                priority = 'E'
+            else:
+                priority = 'C' if tournament.rooms >= 20 else 'D'
+        return priority
+
+    def get_grade(self, app):
+        scores = {
+            'adj': {p: {
+                'count': 0,
+                'breaks': 0,
+                'progression': '',
+                'chair': 0,
+                'cap': 0,
+                'grade': 0,
+            } for p in self.priorities.keys()},
+            'spk': {p: {
+                'count': 0,
+                'breaks': 0,
+                'progression': '',
+                'size': 0,
+                'grade': 0,
+            } for p in self.priorities.keys()},
+        }
+
+        for tournament in app.iatournament_set.all():
+            priority = self.get_priority(tournament)
+
+            if tournament.role == tournament.ROLE_ADJ:
+                scores['adj'][priority]['count'] += 1
+                scores['adj'][priority]['breaks'] += int(tournament.last_round != '')
+                if (self.round_values[scores['adj'][priority]['progression']] < self.round_values[tournament.last_round]):
+                    scores['adj'][priority]['progression'] = tournament.last_round
+                scores['adj'][priority]['chair'] += int(tournament.last_round_chair != '')
+            elif tournament.role == tournament.ROLE_CA:
+                scores['adj'][priority]['cap'] += 1
+            elif tournament.role == tournament.ROLE_SPK:
+                scores['spk'][priority]['count'] += 1
+                scores['spk'][priority]['breaks'] += int(tournament.last_round != '')
+                if (self.round_values[scores['spk'][priority]['progression']] < self.round_values[tournament.last_round]):
+                    scores['spk'][priority]['progression'] = tournament.last_round
+                scores['spk'][priority]['size'] = max(scores['spk'][priority]['size'], tournament.rooms)
+
+        prev = {'adj': None, 'spk': None}
+        maxmax_grade = 0
+        for p, coeffs in self.priorities.items():
+            adj_scores, spk_scores = self.percolate_scores(prev['adj'], prev['spk'], scores['adj'][p], scores['spk'][p])
+
+            adj_scores['grade'] = self.calc_adj_score(adj_scores, coeffs['adj'])
+            spk_scores['grade'] = self.calc_spk_score(spk_scores, coeffs['spk'])
+
+            prev['adj'] = adj_scores
+            prev['spk'] = spk_scores
+
+            maxmax_grade = max(maxmax_grade, adj_scores['grade'], spk_scores['grade'])
+
+        return scores, maxmax_grade
+
+
+class IAApplicationsTableView(AdminMixin, IAApplicationMixin, VueTableTemplateView):
+    template_name = "reg_base_vue_table.html"
+    page_title = gettext_lazy("IA Applications")
+
+    def get_table(self):
+        table = BaseTableBuilder(view=self, title=_("Applicants"))
+
+        apps = self.tournament.iaapplicant_set.prefetch_related('iatournament_set__category').all()
+
+        table.add_column({'key': 'name', 'title': _("Name")}, [{
+            'text': app.name,
+            'link': reverse_tournament('ia-applicants-detail', self.tournament, kwargs={'id': app.id}),
+        } for app in apps])
+        table.add_column({'key': 'grade', 'title': _("Grade")}, [{
+            'text': "{:,.1f}".format(self.get_grade(app)[1]),
+        } for app in apps])
+
+        return table
+
+
+class IAApplicationApplicantView(AdminMixin, IAApplicationMixin, VueTableTemplateView):
+    template_name = "reg_base_vue_table.html"
+    page_title = gettext_lazy("IA Applicant")
+
+    @property
+    def object(self):
+        return self.tournament.iaapplicant_set.prefetch_related('iatournament_set__category').get(id=self.kwargs['id'])
+
+    def get_page_subtitle(self):
+        return "%s (%.1f)" % (self.object.name, self.get_grade(self.object)[1])
+
+    def get_tables(self):
+        return [self.get_adj_table(), self.get_spk_table()]
+
+    def get_adj_table(self):
+        table = BaseTableBuilder(view=self, title=_("As adjudicator"))
+
+        tournaments = IATournament.objects.filter(
+            role__in=[IATournament.ROLE_CA, IATournament.ROLE_ADJ], application=self.object,
+        ).select_related('category')
+
+        table.add_column({'key': 'tournament', 'title': _("Tournament")}, [{
+            'text': t.name,
+        } for t in tournaments])
+        table.add_column({'key': 'year', 'title': _("Year")}, [{
+            'text': t.year,
+        } for t in tournaments])
+        table.add_column({'key': 'category', 'title': _("Category")}, [{
+            'text': self.get_priority(t),
+        } for t in tournaments])
+        table.add_boolean_column({'key': 'cap', 'title': _("CA")}, [t.role == t.ROLE_CA for t in tournaments])
+        table.add_column({'key': 'round', 'title': _("Last round")}, [{
+            'text': t.last_round or _("—"),
+        } for t in tournaments])
+        table.add_column({'key': 'roundchair', 'title': _("Last chair")}, [{
+            'text': t.last_round_chair or _("—"),
+        } for t in tournaments])
+
+        return table
+
+    def get_spk_table(self):
+        table = BaseTableBuilder(view=self, title=_("As speaker"))
+
+        tournaments = IATournament.objects.filter(
+            role=IATournament.ROLE_SPK, application=self.object,
+        ).select_related('category')
+
+        table.add_column({'key': 'tournament', 'title': _("Tournament")}, [{
+            'text': t.name,
+        } for t in tournaments])
+        table.add_column({'key': 'year', 'title': _("Year")}, [{
+            'text': t.year,
+        } for t in tournaments])
+        table.add_column({'key': 'category', 'title': _("Category")}, [{
+            'text': self.get_priority(t),
+        } for t in tournaments])
+        table.add_column({'key': 'round', 'title': _("Last round")}, [{
+            'text': t.last_round or _("—"),
+        } for t in tournaments])
+
+        return table
+
+
+class IAApplicationResponses(AdminMixin, IAApplicationMixin, BaseCsvView):
+    filename = 'ia-responses.csv'
+
+    def write_rows(self, writer):
+        adj_headers = ["count", "breaks", "progression", "chair", "cap", "grade"]
+        spk_headers = ["count", "breaks", "progression", "size", "grade"]
+
+        headers = ["name", "email"]
+        for priority in self.priorities.keys():
+            for header in adj_headers:
+                headers.append("%s.adj.%s" % (priority, header))
+            for header in spk_headers:
+                headers.append("%s.spk.%s" % (priority, header))
+            headers.append("%s._.grade" % (priority,))
+
+        headers.append("_._.grade")
+        writer.writerow(headers)
+
+        applications = self.tournament.iaapplicant_set.prefetch_related('iatournament_set__category').all()
+        for app in applications:
+            row = [app.name, app.email]
+            scores, grade = self.get_grade(app)
+            for p in self.priorities.keys():
+                row.extend(scores['adj'][p].values())
+                row.extend(scores['spk'][p].values())
+                row.append(max(scores['adj'][p]['grade'], scores['spk'][p]['grade']))
+
+            row.append(grade)
+            writer.writerow(row)
