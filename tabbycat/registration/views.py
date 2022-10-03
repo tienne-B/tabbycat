@@ -677,8 +677,7 @@ class SuccessPaymentView(TournamentMixin, View):
 
 class IAApplicationView(TournamentMixin, RegistrationFormTitlesMixin, TemplateView):
     template_name = 'ia_application.html'
-    form_title = gettext_lazy('IA Application')
-    save_text = gettext_lazy('Submit')
+    form_title = "Aplicación IA"
 
     def get_details_form(self, data=None):
         return IADetailsForm(tournament=self.tournament, data=data)

@@ -9,6 +9,8 @@
 
   <div class="card mt-3">
 
+    {% include "components/form-title.html" with title=form_title emoji="✨" %}
+
     {% include "components/form-main.html" with form=applicant_form %}
     {{ formset.management_form }}
 
@@ -25,10 +27,10 @@
     <div class="list-group-item pt-3 pb-3" id="submit-buttons">
       <div class="row">
         <div class="col">
-          <input class="btn btn-block btn-success" type="submit" name="submit" value="{{ save_text }}" />
+          <input class="btn btn-block btn-success" type="submit" name="submit" value="{{ submit_title }}" />
         </div>
         <div class="col mt-md-0 mt-3">
-          <input class="btn btn-block btn-primary" name="add_more" value="{% trans 'Add another tournament' %}" />
+          <input class="btn btn-block btn-primary" name="add_more" value="Añadir otro torneo" />
         </div>
       </div>
     </div>

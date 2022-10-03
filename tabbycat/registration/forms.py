@@ -328,11 +328,11 @@ class IATournamentForm(forms.ModelForm):
     )
 
     rooms = forms.ChoiceField(choices=(
-        (1, _("Less than 10 rooms")),
-        (10, _("10-20 rooms")),
-        (20, _("20-30 rooms")),
-        (30, _("30-40 rooms")),
-        (40, _("More than 40 rooms")),
+        (1, "Menos de 10 salas"),
+        (10, "10 - 20 salas"),
+        (20, "20 - 30 salas"),
+        (30, "30 - 40 salas"),
+        (40, "Más de 40 salas"),
     ), label="Número de salas", required=True)
 
     last_round = forms.ChoiceField(choices=((r, r) for r in all_rounds), required=False)
