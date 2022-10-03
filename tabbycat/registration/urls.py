@@ -27,6 +27,13 @@ urlpatterns = [
             ])),
             path('stripe-connect/', views.ConnectStripeAccountView.as_view(), name='stripe-connect-account'),
             path('export/', views.ExportTournamentView.as_view(), name='export-tournament'),
+            path('ias/', include([
+                path('applicants.csv', views.IAApplicationResponses.as_view(), name='ia-applicants-csv'),
+                path('applicants/', include([
+                    path('', views.IAApplicationsTableView.as_view(), name='ia-applicants-list'),
+                    path('<int:id>/', views.IAApplicationApplicantView.as_view(), name='ia-applicants-detail'),
+                ])),
+            ])),
         ])),
         path('payment/', include([
             path('cancel/', views.CancelPaymentView.as_view(), name='cancel-payment'),
@@ -34,5 +41,6 @@ urlpatterns = [
             path('t<int:pk>/', views.IndividualPaymentView.as_view(object_type='t'), name='individual-team-payment'),
             path('a<int:pk>/', views.IndividualPaymentView.as_view(object_type='a'), name='individual-adj-payment'),
         ])),
+        path('ia-app/', views.IAApplicationView.as_view(), name='ia-application'),
     ])),
 ]

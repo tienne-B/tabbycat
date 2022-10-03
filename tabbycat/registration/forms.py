@@ -10,7 +10,7 @@ from dynamic_preferences.forms import preference_form_builder, PreferenceForm
 
 from portal.forms import CalendarDateInputWidget
 
-from .models import Adjudicator, Institution, Speaker, Team, Tournament
+from .models import Adjudicator, IAApplicant, IATournament, Institution, Speaker, Team, Tournament
 from .registries import tournament_preferences_registry
 
 
@@ -269,3 +269,96 @@ class InstitutionApproveForm(forms.Form):
             institution.accepted_teams = self.cleaned_data[self._fieldname_accepted_teams(institution)]
             institution.accepted_adjudicators = self.cleaned_data[self._fieldname_accepted_adjs(institution)]
         Institution.objects.bulk_update(institutions, ['accepted_teams', 'accepted_adjudicators'])
+
+
+class IADetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = IAApplicant
+        fields = ('name', 'email')
+
+    def __init__(self, *args, **kwargs):
+        self.tournament = kwargs.pop('tournament')
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        obj.tournament = self.tournament
+
+        if commit:
+            obj.save()
+        return obj
+
+
+class CategoryModelChoiceField(forms.ModelChoiceField):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['empty_label'] = _("Other")
+        super().__init__(*args, **kwargs)
+
+
+class LastRoundChoiceField(forms.ChoiceField):
+
+    def __init__(self, *args, **kwargs):
+        kwargs['empty_label'] = "No Breakeaste"
+        super().__init__(*args, **kwargs)
+
+
+class IATournamentForm(forms.ModelForm):
+
+    all_rounds = (
+        "Open PDOs",
+        "Open Octos",
+        "Open Quarters",
+        "Open Semis",
+        "Open Final",
+        "ESL Quarters",
+        "ESL Semis",
+        "ESL Final",
+        "EFL Semis",
+        "EFL Final",
+        "Pre-octavos",
+        "Octavos",
+        "Cuartos",
+        "Semis",
+        "Final Open",
+        "Final ELE",
+        "Semis Novates",
+        "Final Novates",
+    )
+
+    rooms = forms.ChoiceField(choices=(
+        (1, "Menos de 10 salas"),
+        (10, "10 - 20 salas"),
+        (20, "20 - 30 salas"),
+        (30, "30 - 40 salas"),
+        (40, "Más de 40 salas"),
+    ), label="Número de salas", required=True)
+
+    last_round = forms.ChoiceField(choices=((r, r) for r in all_rounds), required=False)
+    last_round_chair = forms.ChoiceField(choices=((r, r) for r in all_rounds), required=False)
+
+    class Meta:
+        model = IATournament
+        exclude = ('application',)
+        field_classes = {
+            'category': CategoryModelChoiceField,
+        }
+        labels = {
+            'category': "Torneo",
+            'year': "Año",
+            'role': "Como persona",
+            'not_bp': "¿Este torneo era temático, interno y/o de un formato diferente al Parlamentario Británico?",
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.application = kwargs.pop('application', None)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        obj.application = self.application
+
+        if commit:
+            obj.save()
+        return obj

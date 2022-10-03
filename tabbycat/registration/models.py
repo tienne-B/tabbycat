@@ -347,3 +347,55 @@ class Discount(models.Model):
         if self.adjudicator is not None:
             return "Adj Discount: %s" % (self.adjudicator.name,)
         return "Unknown Discount"
+
+
+class IAApplicant(Person):
+    tournament = models.ForeignKey(Tournament, models.CASCADE,
+        verbose_name=_("tournament"))
+
+    class Meta:
+        verbose_name = _("IA applicant")
+        verbose_name_plural = _("IA applicants")
+
+
+class IATournamentCategory(models.Model):
+    tournament = models.ForeignKey(Tournament, models.CASCADE,
+        verbose_name=_("tournament"))
+    name = models.CharField(max_length=20, verbose_name=_("name"))
+    priority = models.CharField(max_length=2, verbose_name=_("priority"))
+
+    class Meta:
+        verbose_name = _("IA tournament category")
+        verbose_name_plural = _("IA tournament categories")
+
+    def __str__(self):
+        return self.name
+
+
+class IATournament(models.Model):
+    ROLE_ADJ = 'a'
+    ROLE_SPK = 's'
+    ROLE_CA = 'c'
+    ROLE_CHOICES = (
+        (ROLE_ADJ, "jueza"),
+        (ROLE_CA, _("adjudication core")),
+        (ROLE_SPK, _("speaker")),
+    )
+    application = models.ForeignKey(IAApplicant, models.CASCADE, verbose_name=_("application"))
+    category = models.ForeignKey(IATournamentCategory, models.SET_NULL, null=True, blank=True, verbose_name=_("category"))
+    name = models.CharField(max_length=100, verbose_name=_("name"))
+    year = models.PositiveIntegerField(blank=True, verbose_name=_("year"))
+    role = models.CharField(max_length=1, choices=ROLE_CHOICES, blank=False, verbose_name=_("participant role"))
+
+    not_bp = models.BooleanField(blank=True, verbose_name=_("is not BP"))
+    rooms = models.PositiveIntegerField(blank=True, verbose_name=_("number of rooms"))
+
+    last_round = models.CharField(max_length=20, blank=True, verbose_name=_("last round as participant"))
+    last_round_chair = models.CharField(max_length=20, null=True, blank=True, verbose_name=_("last round as chair"))
+
+    class Meta:
+        verbose_name = _("IA tournament")
+        verbose_name_plural = _("IA tournaments")
+
+    def __str__(self):
+        return "%s: %s" % (str(self.application), self.name)
