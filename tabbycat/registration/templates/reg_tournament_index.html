@@ -110,7 +110,6 @@
         </form>
       </div>
     {% endif %}
-  {% endif %}
 
     <div class="list-group mt-2">
       <form action="{% tournamenturl 'export-tournament' %}" method="POST">
@@ -118,6 +117,7 @@
         <button type="submit" name="continue" class="btn btn-block btn-primary mb-3">{% trans "Export Registration" %}</button>
       </form>
     </div>
+  {% endif %}
 
   {% if pref.tournament_staff %}
     <div class="card mt-3">
