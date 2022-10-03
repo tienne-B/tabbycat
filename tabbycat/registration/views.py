@@ -687,8 +687,9 @@ class IAApplicationView(TournamentMixin, RegistrationFormTitlesMixin, TemplateVi
         return modelformset_factory(IATournament, form=IATournamentForm, extra=extra)
 
     def get_context_data(self, **kwargs):
-        kwargs['applicant_form'] = kwargs.get('applicant_form') or self.get_details_form()
-        kwargs['formset'] = kwargs.get('formset') or self.get_formset_class()()
+        if self.request.method == 'GET':
+            kwargs['applicant_form'] = self.get_details_form()
+            kwargs['formset'] = self.get_formset_class()(queryset=IATournament.objects.none())
         return super().get_context_data(**kwargs)
 
     def get_success_url(self):
