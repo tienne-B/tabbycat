@@ -387,7 +387,7 @@ class IATournament(models.Model):
     year = models.PositiveIntegerField(blank=True, verbose_name=_("year"))
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, blank=False, verbose_name=_("participant role"))
 
-    in_bp = models.BooleanField(blank=True, verbose_name=_("is BP"))
+    not_bp = models.BooleanField(blank=True, verbose_name=_("is not BP"))
     rooms = models.PositiveIntegerField(blank=True, verbose_name=_("number of rooms"))
 
     last_round = models.CharField(max_length=20, blank=True, verbose_name=_("last round as participant"))

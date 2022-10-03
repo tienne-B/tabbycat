@@ -862,7 +862,7 @@ class IAApplicationMixin:
     def get_priority(self, tournament):
         priority = getattr(tournament.category, 'priority', None)
         if priority is None:
-            if not tournament.in_bp:
+            if tournament.not_bp:
                 priority = 'E'
             else:
                 priority = 'C' if tournament.rooms >= 20 else 'D'

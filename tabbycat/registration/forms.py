@@ -348,7 +348,7 @@ class IATournamentForm(forms.ModelForm):
             'category': "Torneo",
             'year': "Año",
             'role': "Como persona",
-            'in_bp': "¿Este torneo era temático, interno y/o de un formato diferente al Parlamentario Británico?",
+            'not_bp': "¿Este torneo era temático, interno y/o de un formato diferente al Parlamentario Británico?",
         }
 
     def __init__(self, *args, **kwargs):
