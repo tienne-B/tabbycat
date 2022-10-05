@@ -133,7 +133,7 @@ class AdminRegistrationListView(AdminMixin, TournamentMixin, VueTableTemplateVie
             'key': "institution",
             'icon': 'home',
             'tooltip': _("Institution"),
-        }, [team.institution.name if team.institution else _("-") for team in qs])
+        }, [team.institution.code if team.institution else _("-") for team in qs])
 
         table.add_boolean_column({
             'key': 'paid',
