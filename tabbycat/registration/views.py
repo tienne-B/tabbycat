@@ -965,10 +965,7 @@ class IAApplicationApplicantView(AdminMixin, IAApplicationMixin, VueTableTemplat
         ).select_related('category')
 
         table.add_column({'key': 'tournament', 'title': _("Tournament")}, [{
-            'text': t.name,
-        } for t in tournaments])
-        table.add_column({'key': 'year', 'title': _("Year")}, [{
-            'text': t.year,
+            'text': "%s %d" % (t.name, t.year),
         } for t in tournaments])
         table.add_column({'key': 'category', 'title': _("Category")}, [{
             'text': self.get_priority(t),
@@ -991,10 +988,7 @@ class IAApplicationApplicantView(AdminMixin, IAApplicationMixin, VueTableTemplat
         ).select_related('category')
 
         table.add_column({'key': 'tournament', 'title': _("Tournament")}, [{
-            'text': t.name,
-        } for t in tournaments])
-        table.add_column({'key': 'year', 'title': _("Year")}, [{
-            'text': t.year,
+            'text': "%s %d" % (t.name, t.year),
         } for t in tournaments])
         table.add_column({'key': 'category', 'title': _("Category")}, [{
             'text': self.get_priority(t),

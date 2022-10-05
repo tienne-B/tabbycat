@@ -293,7 +293,7 @@ class IADetailsForm(forms.ModelForm):
 class CategoryModelChoiceField(forms.ModelChoiceField):
 
     def __init__(self, *args, **kwargs):
-        kwargs['empty_label'] = _("Other")
+        kwargs['empty_label'] = "Otro"
         super().__init__(*args, **kwargs)
 
 
