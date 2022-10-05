@@ -863,9 +863,11 @@ class IAApplicationMixin:
         priority = getattr(tournament.category, 'priority', None)
         if priority is None:
             if tournament.not_bp:
-                priority = 'E'
+                return 'E'
+            elif tournament.rooms >= 20:
+                priority = 'B' if tournament.language == 'en' else 'C'
             else:
-                priority = 'C' if tournament.rooms >= 20 else 'D'
+                return 'D'
         return priority
 
     def get_grade(self, app):

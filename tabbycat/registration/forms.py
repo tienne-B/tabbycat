@@ -347,6 +347,7 @@ class IATournamentForm(forms.ModelForm):
         labels = {
             'category': "Torneo",
             'year': "Año",
+            'language': "Idioma",
             'role': "Como persona",
             'not_bp': "¿Este torneo era temático, interno y/o de un formato diferente al Parlamentario Británico?",
         }

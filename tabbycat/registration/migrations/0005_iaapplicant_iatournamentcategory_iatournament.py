@@ -42,6 +42,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100, verbose_name='name')),
                 ('year', models.PositiveIntegerField(blank=True, verbose_name='year')),
+                ('language', models.CharField(blank=True, choices=[('en', 'English'), ('es', 'Spanish'), ('', 'Otro')], max_length=3, verbose_name='language')),
                 ('role', models.CharField(choices=[('a', 'jueza'), ('c', 'adjudication core'), ('s', 'speaker')], max_length=1, verbose_name='participant role')),
                 ('not_bp', models.BooleanField(blank=True, verbose_name='is not BP')),
                 ('rooms', models.PositiveIntegerField(blank=True, verbose_name='number of rooms')),

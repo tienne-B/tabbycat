@@ -81,7 +81,7 @@ const addBreakOptions = (category, type) => {
 }
 
 const animateForm = function(form) {
-  const [category, name, year, role, notBP, rooms, lastRound, lastRoundC] = form.querySelectorAll(".form-group")
+  const [category, name, year, role, language, notBP, rooms, lastRound, lastRoundC] = form.querySelectorAll(".form-group")
 
   const lastRoundField = lastRound.querySelector("select")
   const lastRoundCField = lastRoundC.querySelector("select")
@@ -91,6 +91,7 @@ const animateForm = function(form) {
   name.hidden = false
   year.hidden = false
   role.hidden = false
+  language.hidden = false
   notBP.hidden = false
   rooms.hidden = false
   lastRound.hidden = roleField.value === ''
@@ -121,11 +122,14 @@ const animateForm = function(form) {
   category.addEventListener('change', (e) => {
     if (e.target.value === '') {
       name.hidden = false
+      language.hidden = false
       notBP.hidden = false
       rooms.hidden = false
     } else {
       name.hidden = true
       name.getElementsByTagName("input")[0].value = e.target.querySelector('[value="' + e.target.value + '"]').textContent
+      language.hidden = true
+      language.getElementsByTagName("select")[0].value = e.target.value === '1' ? 'en' : 'es'
       notBP.hidden = true
       rooms.hidden = true
       rooms.getElementsByTagName("select")[0].value = "40"
