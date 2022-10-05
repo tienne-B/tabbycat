@@ -16,7 +16,8 @@ class AdjudicatorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Adjudicator
-        fields = ('name', 'gender', 'email', 'institution', 'independent')
+        fields = ('name', 'gender', 'email', 'institution', 'independent',
+            'institution_conflicts', 'team_conflicts', 'adjudicator_conflicts')
 
 
 class InstitutionSerializer(serializers.ModelSerializer):
