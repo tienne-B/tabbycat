@@ -195,7 +195,7 @@ class AdminInstitutionsListView(AdminMixin, TournamentMixin, VueTableTemplateVie
 
 class ExportTournamentView(AdminMixin, TournamentMixin, PostOnlyRedirectView):
 
-    def get_success_url(self):
+    def get_redirect_url(self):
         return reverse_tournament('tournament-home', self.tournament)
 
     def post(self, request, *args, **kwargs):
@@ -291,6 +291,7 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
         for adj in adjudicators:
             adj.tournament = self.tournament
             adj.institution = self.institution
+            adj.manager = self.request.user
             adj.save()
 
         for adj in formset.deleted_objects:
