@@ -276,6 +276,9 @@ class IADetailsForm(forms.ModelForm):
     class Meta:
         model = IAApplicant
         fields = ('name', 'email')
+        help_texts = {
+            "name": "Escribe el mismo correo que has proporcionado a organización en tu formulario de aplicación",
+        }
 
     def __init__(self, *args, **kwargs):
         self.tournament = kwargs.pop('tournament')
@@ -329,10 +332,10 @@ class IATournamentForm(forms.ModelForm):
 
     rooms = forms.ChoiceField(choices=(
         (1, "Menos de 10 salas"),
-        (10, "10 - 20 salas"),
-        (20, "20 - 30 salas"),
-        (30, "30 - 40 salas"),
-        (40, "Más de 40 salas"),
+        (10, "10 - 19 salas"),
+        (20, "20 - 29 salas"),
+        (30, "30 - 39 salas"),
+        (40, "40+ salas"),
     ), label="Número de salas", required=True)
 
     last_round = forms.ChoiceField(choices=((r, r) for r in all_rounds), required=False)

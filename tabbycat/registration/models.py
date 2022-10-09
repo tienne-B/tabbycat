@@ -379,7 +379,7 @@ class IATournament(models.Model):
     ROLE_CHOICES = (
         (ROLE_ADJ, "jueza"),
         (ROLE_CA, _("adjudication core")),
-        (ROLE_SPK, _("speaker")),
+        (ROLE_SPK, "oradora"),
     )
     application = models.ForeignKey(IAApplicant, models.CASCADE, verbose_name=_("application"))
     category = models.ForeignKey(IATournamentCategory, models.SET_NULL, null=True, blank=True, verbose_name=_("category"))

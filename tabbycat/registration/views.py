@@ -682,7 +682,7 @@ class SuccessPaymentView(TournamentMixin, View):
 
 class IAApplicationView(TournamentMixin, RegistrationFormTitlesMixin, TemplateView):
     template_name = 'ia_application.html'
-    form_title = "Aplicación IA"
+    form_title = "Experiencia"
 
     def get_details_form(self, data=None):
         return IADetailsForm(tournament=self.tournament, data=data)
