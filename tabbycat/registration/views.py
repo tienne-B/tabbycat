@@ -798,7 +798,7 @@ class IAApplicationMixin:
             'adj': {
                 'count': 1,
                 'breaks': [0, 3, 3.5, 4],
-                'progression': [0, 0, 0, 0, 0, 0],
+                'progression': [0, 0, 0, 0, 0.5, 1],
                 'chair': 0.5,
                 'cap': 0.5,
             },
@@ -812,7 +812,7 @@ class IAApplicationMixin:
             'adj': {
                 'count': 1,
                 'breaks': [0, 2, 2.5, 3],
-                'progression': [0, 0, 0, 0, 0, 0],
+                'progression': [0, 0, 0, 0, 0.5, 1],
                 'chair': 0,
                 'cap': 0.5,
             },
