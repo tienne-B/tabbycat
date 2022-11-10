@@ -45,6 +45,12 @@
 {% block js %}
 {{ block.super }}
 <script>
+const currencies = {
+  "aud": 55,
+  "cad": 50,
+  "eur": 35,
+  "usd": 40
+}
 let paymentLabel = document.querySelector('button[name="continue"]');
 let updatePrice = (e) => {
   let currency = document.querySelector('#id_currency').value;
