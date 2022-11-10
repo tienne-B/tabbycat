@@ -9,6 +9,8 @@ STATIC_URL = os.getenv('STATIC_URL', '/static/')
 
 BASE_DOMAIN = os.environ.get('BASE_DOMAIN', 'calicotab.com')
 
+DISABLE_SENTRY = False
+
 # ==============================================================================
 # Database
 # ==============================================================================
