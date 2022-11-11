@@ -2,6 +2,11 @@
 
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '.calicotab.com').split(',')
 SECRET_KEY = os.environ.get('DJ_SECRET_KEY')
@@ -223,3 +228,18 @@ else:
 
     # Use the cache with database write through for local sessions
     SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+
+# ==============================================================================
+# Sentry
+# ==============================================================================
+
+sentry_sdk.init(
+    dsn="https://6bf2099f349542f4b9baf73ca9789597@o85113.ingest.sentry.io/185382",
+    integrations=[
+        DjangoIntegration(),
+        LoggingIntegration(event_level=logging.WARNING),
+        RedisIntegration(),
+    ],
+    send_default_pii=True,
+    release=TABBYCAT_VERSION,
+)
