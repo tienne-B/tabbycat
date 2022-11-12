@@ -725,7 +725,7 @@ class DebateResultWithScoresMixin:
     def get_ghost(self, side, position):
         return self.ghosts[side].get(position)
 
-    def set_ghost(self, side, position, is_ghost):
+    def set_ghost(self, side, position, is_ghost=True):
         self.ghosts[side][position] = is_ghost
 
     # --------------------------------------------------------------------------
