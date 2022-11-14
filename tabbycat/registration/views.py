@@ -288,7 +288,7 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
         for adj in adjudicators:
             adj.tournament = self.tournament
             adj.institution = self.institution
-            adj.manager = self.user
+            adj.manager = self.request.user
             adj.save()
 
         for adj in formset.deleted_objects:
