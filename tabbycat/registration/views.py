@@ -288,10 +288,11 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
         for adj in adjudicators:
             adj.tournament = self.tournament
             adj.institution = self.institution
+            adj.manager = self.user
             adj.save()
 
         for adj in formset.deleted_objects:
-            if adj.api_url is None:
+            if adj.external_url is None:
                 adj.delete()
 
         count = len(adjudicators)
