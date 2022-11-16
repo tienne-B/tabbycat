@@ -10,13 +10,23 @@ class AdjudicatorSerializer(serializers.ModelSerializer):
         slug_field='external_url',
     )
 
-    institution_conflicts = serializers.HiddenField(default=[])
-    team_conflicts = serializers.HiddenField(default=[])
-    adjudicator_conflicts = serializers.HiddenField(default=[])
+    institution_conflicts = serializers.SerializerMethodField()
+    team_conflicts = serializers.SerializerMethodField()
+    adjudicator_conflicts = serializers.SerializerMethodField()
 
     class Meta:
         model = Adjudicator
-        fields = ('name', 'gender', 'email', 'institution', 'independent')
+        fields = ('name', 'gender', 'email', 'institution', 'independent',
+            'institution_conflicts', 'team_conflicts', 'adjudicator_conflicts')
+
+    def get_institution_conflicts(self, obj):
+        return []
+
+    def get_team_conflicts(self, obj):
+        return []
+
+    def get_adjudicator_conflicts(self, obj):
+        return []
 
 
 class InstitutionSerializer(serializers.ModelSerializer):
@@ -46,8 +56,8 @@ class TeamSerializer(serializers.ModelSerializer):
         slug_field='external_url',
     )
 
-    break_categories = serializers.HiddenField(default=[])
-    institution_conflicts = serializers.HiddenField(default=[])
+    break_categories = serializers.SerializerMethodField()
+    institution_conflicts = serializers.SerializerMethodField()
 
     class Meta:
         model = Team

@@ -207,8 +207,11 @@ class ExportTournamentView(AdminMixin, TournamentMixin, PostOnlyRedirectView):
             else:
                 url = self.tournament.external_url + "/" + model.__name__.lower() + "s"
             for obj in qs:
-                r = requests.post(url, json=serializer(obj).data, headers=headers)
-                r.raise_for_status()
+                try:
+                    r = requests.post(url, json=serializer(obj).data, headers=headers)
+                    r.raise_for_status()
+                except requests.exceptions.HTTPError as e:
+                    raise Exception(r.json()) from e
                 obj.external_url = r.json()['url']
             model.objects.bulk_update(qs, ['external_url'])
 
