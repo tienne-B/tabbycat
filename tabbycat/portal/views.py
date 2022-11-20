@@ -253,7 +253,7 @@ class CreateInstanceFormView(AssistantMixin, FormView):
             email=self.request.user.email,
         ).get('data', [])))
         if len(customers) > 0:
-            customer = customers['data'][0]
+            customer = customers[0]
         else:
             customer = stripe.Customer.create(email=self.request.user.email)
 
@@ -330,7 +330,7 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
             email=self.request.user.email,
         ).get('data', [])))
         if len(customers) > 0:
-            customer = customers['data'][0]
+            customer = customers[0]
         else:
             customer = stripe.Customer.create(email=self.request.user.email)
 
