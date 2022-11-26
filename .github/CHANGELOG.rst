@@ -2,6 +2,29 @@
 Change Log
 ==========
 
+2.7.2
+-----
+*Release date: TBD*
+
+- Fixed crashes when creating ballots through the API (BACKEND-AM2)
+- Don't re-capitalize side names in results tables
+- Fixed printable ballots not appearing when in French
+- Prevented malicious strings from breaking printable pages
+
+
+2.7.1
+-----
+*Release date: 6 November 2022*
+
+- Escaped values in tables to avoid malicious data
+- Fixed crash on loading email dialog for team draws
+- Fixed team standing emails not being sent
+- Fixed sorting by venue name or priority in the allocator
+- Fixed adjudicator private URLs not loading
+- Adjudicator feedback tables now properly sortable by number of feedback
+- Checkboxes no longer overlap with table headers
+
+
 2.7.0 (Pixie-bob)
 ---------
 *Release date: 1 October 2022*

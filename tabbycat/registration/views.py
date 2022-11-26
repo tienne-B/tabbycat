@@ -210,12 +210,11 @@ class ExportTournamentView(AdminMixin, TournamentMixin, PostOnlyRedirectView):
             else:
                 url = self.tournament.external_url + "/" + model.__name__.lower() + "s"
             for obj in qs:
-                r = requests.post(url, json=serializer(obj).data, headers=headers)
                 try:
+                    r = requests.post(url, json=serializer(obj).data, headers=headers)
                     r.raise_for_status()
-                except Exception:
-                    messages.error(self.request, r.text)
-                    return super().post(request, *args, **kwargs)
+                except requests.exceptions.HTTPError as e:
+                    raise Exception(r.json()) from e
                 obj.external_url = r.json()['url']
             model.objects.bulk_update(qs, ['external_url'])
 
@@ -299,7 +298,7 @@ class EditAdjudicatorsView(InstitutionMixin, ModelFormSetView):
             adj.save()
 
         for adj in formset.deleted_objects:
-            if adj.api_url is None:
+            if adj.external_url is None:
                 adj.delete()
 
         count = len(adjudicators)
