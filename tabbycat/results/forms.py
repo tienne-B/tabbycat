@@ -4,6 +4,7 @@ from itertools import product
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django import forms
+from django.db import connection
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -210,14 +211,14 @@ class BaseResultForm(forms.Form):
 
             # 5. Notify the Latest Results consumer (for results/overview)
             if self.debate.result_status == Debate.STATUS_CONFIRMED:
-                group_name = BallotResultConsumer.group_prefix + "_" + t.slug
+                group_name = BallotResultConsumer.group_prefix + "_" + connection.schema_name + "_" + t.slug
                 async_to_sync(get_channel_layer().group_send)(group_name, {
                     "type": "send_json",
                     "data": self.ballotsub.serialize_like_actionlog,
                 })
 
         # 6. Notify the Results Page/Ballots Status Graph
-        group_name = BallotStatusConsumer.group_prefix + "_" + t.slug
+        group_name = BallotStatusConsumer.group_prefix + "_" + connection.schema_name + "_" + t.slug
         meta = get_status_meta(self.debate)
         async_to_sync(get_channel_layer().group_send)(group_name, {
             "type": "send_json",

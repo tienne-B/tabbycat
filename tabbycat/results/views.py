@@ -835,7 +835,7 @@ class PostponeDebateView(AdministratorMixin, RoundMixin, PostOnlyRedirectView):
         debate.save()
 
         # Notify the Results Page
-        group_name = BallotStatusConsumer.group_prefix + "_" + debate.round.tournament.slug
+        group_name = BallotStatusConsumer.group_prefix + "_" + request.tenant.schema_name + "_" + debate.round.tournament.slug
         meta = get_status_meta(debate)
         async_to_sync(get_channel_layer().group_send)(group_name, {
             "type": "send_json",

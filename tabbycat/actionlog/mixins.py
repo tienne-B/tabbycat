@@ -103,7 +103,7 @@ class LogActionMixin:
         # Notify the actionlog consumer to broadcast the event
         if self.tournament:
             print('Broadcasting notification of ActionLogEntryConsumer')
-            group_name = ActionLogEntryConsumer.group_prefix + "_" + self.tournament.slug
+            group_name = ActionLogEntryConsumer.group_prefix + "_" + self.request.tenant.schema_name + "_" + self.tournament.slug
             async_to_sync(get_channel_layer().group_send)(group_name, {
                 "type": "send_json",
                 "data": log.serialize,

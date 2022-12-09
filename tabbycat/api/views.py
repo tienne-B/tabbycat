@@ -323,7 +323,7 @@ class BaseCheckinsView(AdministratorAPIMixin, TournamentAPIMixin, APIView):
             checkins.filter(identifier=obj.checkin_identifier).delete()
             checkin_dict = {'identifier': obj.checkin_identifier.barcode}
 
-        group_name = CheckInEventConsumer.group_prefix + "_" + self.tournament.slug
+        group_name = CheckInEventConsumer.group_prefix + "_" + self.request.tenant.schema_name + "_" + self.tournament.slug
         async_to_sync(get_channel_layer().group_send)(group_name, {
             'type': 'send_json',
             'data': {

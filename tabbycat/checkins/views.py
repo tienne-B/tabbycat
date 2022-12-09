@@ -294,7 +294,7 @@ class ParticipantCheckinView(PublicTournamentPageMixin, PostOnlyRedirectView):
             return TemplateResponse(request=self.request, template='400.html', status=400)
 
         # Override permissions check - no user but authenticated through URL
-        group_name = CheckInEventConsumer.group_prefix + "_" + t.slug
+        group_name = CheckInEventConsumer.group_prefix + "_" + request.tenant.schema_name + "_" + t.slug
         async_to_sync(get_channel_layer().group_send)(
             group_name, {
                 'type': 'send_json',

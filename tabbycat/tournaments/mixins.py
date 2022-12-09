@@ -158,7 +158,7 @@ class TournamentWebsocketMixin(TournamentFromUrlMixin):
     def group_name(self):
         if self.group_prefix is None:
             raise ImproperlyConfigured("group_prefix must be specified on subclasses of TournamentWebsocketMixin")
-        return self.group_prefix + '_' + self.tournament.slug
+        return self.group_prefix + '_' + self.scope['schema'] + '_' + self.tournament.slug
 
     def send_error(self, error, message, original_content):
         # Need to forcibly decode the string (for translations)
