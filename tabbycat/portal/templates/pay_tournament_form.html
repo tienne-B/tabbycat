@@ -55,7 +55,7 @@ let paymentLabel = document.querySelector('button[name="continue"]');
 let updatePrice = (e) => {
   let currency = document.querySelector('#id_currency').value;
   var val = currencies[currency] * document.querySelector("#id_qtd").value;
-  paymentLabel.innerText = '{% trans "Pay for Tournament" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + ")";
+  paymentLabel.innerText = '{% trans "Pay for Tournament" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + " + tax)";
 };
 updatePrice();
 document.querySelector("#id_qtd").addEventListener("change", updatePrice);

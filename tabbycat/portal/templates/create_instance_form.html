@@ -60,7 +60,7 @@ let updatePrice = (e) => {
   let currency = document.querySelector('#id_currency').value;
   var val = currencies[currency];
   if (document.querySelector("#id_backups").checked) { val *= 2; }
-  paymentLabel.innerText = '{% trans "Go to Payment" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + ")";
+  paymentLabel.innerText = '{% trans "Go to Payment" %}' + " (" + val.toFixed(2) + currency.toUpperCase() + " + tax)";
 };
 updatePrice();
 document.querySelector('#id_backups').addEventListener("change", updatePrice);
