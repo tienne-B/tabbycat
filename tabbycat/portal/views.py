@@ -229,13 +229,13 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         prices = {
             'aud': {},
             'cad': {
-                "site": "price_1HCeyxF87ztd0bejCVJb4jPu",
-                "backups": "price_1JeTswF87ztd0bejC9NTYsHn",
+                "site": "price_1MQ9qSF87ztd0bejnnqHp4E2",
+                "backups": "price_1MQA1aF87ztd0bejNw7Qwdh2",
             },
             'eur': {},
             'usd': {
-                "site": "price_1J329SF87ztd0bejVleIZLnI",
-                "backups": "price_1JeTswF87ztd0bejPz6ltaOq",
+                "site": "price_1MQ9qSF87ztd0bejnnqHp4E2",
+                "backups": "price_1MQA1aF87ztd0bejNw7Qwdh2",
             },
         }
 
@@ -277,6 +277,13 @@ class CreateInstanceFormView(AssistantMixin, FormView):
             payment_intent_data={
                 "description": self.object.name,
                 "metadata": metadata,
+            },
+            automatic_tax={
+                "enabled": True,
+            },
+            customer_update={
+                "address": "auto",
+                "name": "auto",
             },
         )
         self.object.session_id = session['id']
@@ -322,8 +329,8 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
         currency, qtd = form.save()
         main_domain = self.client.domains.get(is_primary=True)
         prices = {
-            'cad': "price_1JeTtxF87ztd0bejyYKMSMeq",
-            'usd': "price_1JeTtxF87ztd0bejup8vbBAh",
+            'cad': "price_1MQA29F87ztd0bej5fIbE2Yk",
+            'usd': "price_1MQA29F87ztd0bej5fIbE2Yk",
         }
 
         customers = list(filter(lambda c: c['currency'] == currency, stripe.Customer.list(
@@ -357,6 +364,13 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
                 "description": "%s: + %d Tournament" % (self.client.name, qtd),
                 "metadata": metadata,
             },
+            automatic_tax={
+                "enabled": True,
+            },
+            customer_update={
+                "address": "auto",
+                "name": "auto",
+            },
         )
         return HttpResponseRedirect(session['url'], status=303)
 
@@ -388,7 +402,7 @@ class StripeWebhookView(View):
             actions = {
                 'payment_intent.succeeded': on_tournament_payment_success,
                 'payment_intent.canceled': on_tournament_payment_fail,
-                'payment_intent.payment_failed': on_tournament_payment_fail,
+                'checkout.session.expired': on_tournament_payment_fail,
             }
             try:
                 args.append(Client.objects.get(schema_name=event['data']['object']['metadata']['slug']))
