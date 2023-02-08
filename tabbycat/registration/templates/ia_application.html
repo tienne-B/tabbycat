@@ -106,6 +106,7 @@ const animateForm = function(form) {
     addBreakOptions(category.querySelector("select").value, 'a').forEach(b => {
       lastRoundCField.add(b)
     })
+    lastRoundCField.querySelector('[value=""]').textContent = 'No Breakeaste / No fui principal en outrounds'
     if (e.target?.value === 's') {
       lastRoundC.hidden = true
       lastRound.querySelector("label").textContent = "¿Cuál fue la última ronda a la que llegaste?"

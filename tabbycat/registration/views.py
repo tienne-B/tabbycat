@@ -8,6 +8,8 @@ from django.db.models.functions import Coalesce
 from django.forms import modelformset_factory
 from django.http import HttpResponseRedirect
 from django.http.response import Http404
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _, gettext_lazy, ngettext
 from django.views.generic import TemplateView, View
 from django.views.generic.edit import CreateView, FormView
@@ -956,7 +958,8 @@ class IAApplicationApplicantView(AdminMixin, IAApplicationMixin, VueTableTemplat
         return self.tournament.iaapplicant_set.prefetch_related('iatournament_set__category').get(id=self.kwargs['id'])
 
     def get_page_subtitle(self):
-        return "%s (%.1f)" % (self.object.name, self.get_grade(self.object)[1])
+        return mark_safe("<a href=\"mailto:%s\">%s</a> (%.1f)" % (
+            escape(self.object.email), escape(self.object.name), self.get_grade(self.object)[1]))
 
     def get_tables(self):
         return [self.get_adj_table(), self.get_spk_table()]

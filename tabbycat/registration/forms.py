@@ -300,13 +300,6 @@ class CategoryModelChoiceField(forms.ModelChoiceField):
         super().__init__(*args, **kwargs)
 
 
-class LastRoundChoiceField(forms.ChoiceField):
-
-    def __init__(self, *args, **kwargs):
-        kwargs['empty_label'] = "No Breakeaste"
-        super().__init__(*args, **kwargs)
-
-
 class IATournamentForm(forms.ModelForm):
 
     all_rounds = (
