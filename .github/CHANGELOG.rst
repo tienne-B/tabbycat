@@ -2,6 +2,43 @@
 Change Log
 ==========
 
+2.7.6
+-----
+*Release date: 25 February 2023*
+
+- Fixed participant record tables causing a crash.
+
+
+2.7.5
+-----
+*Release date: 13 February 2023*
+
+- Fixed checkins not automatically updating through private URLs and API
+- Prevented API error when creating ballot with incorrect speakers (BACKEND-AVN)
+- Added ability to search results by team name, rather than by reference
+- Fixed ballot resaving through Edit Database (BACKEND-AVR)
+- Removed trailing commas after panels in room allocations. Thank you to Trần Trang Linh for the fix!
+- Corrected missing checkin identifiers showing as "null". Thanks again to Trần Trang Linh!
+- Removed Render installation instructions [until that service can be reliably used]
+- Fixed conflicts not showing when dragging panels
+- Fixed adjudicator record pages crashing if shared between tournaments
+- Corrected a few typos
+
+
+2.7.4
+-----
+*Release date: 11 December 2022*
+
+- Fixed an issue that would cause "Connection Lost" errors on new Heroku deployments and prevent the auto-allocator from working
+
+
+2.7.3
+-----
+*Release date: 30 November 2022*
+
+- Fixed a mistake in the URL used to deploy a fork to Heroku
+
+
 2.7.2
 -----
 *Release date: 27 November 2022*
