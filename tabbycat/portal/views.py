@@ -285,6 +285,17 @@ class CreateInstanceFormView(AssistantMixin, FormView):
                 "address": "auto",
                 "name": "auto",
             },
+            payment_method_options={
+                'acss_debit': {
+                    'mandate_options': {
+                        'payment_schedule': 'sporadic',
+                        'transaction_type': 'personal',
+                    },
+                },
+                'wechat_pay': {
+                    'client': 'web',
+                },
+            },
         )
         self.object.session_id = session['id']
         self.object.payment_id = session['payment_intent']
@@ -370,6 +381,17 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
             customer_update={
                 "address": "auto",
                 "name": "auto",
+            },
+            payment_method_options={
+                'acss_debit': {
+                    'mandate_options': {
+                        'payment_schedule': 'sporadic',
+                        'transaction_type': self.acss_customer_type,
+                    },
+                },
+                'wechat_pay': {
+                    'client': 'web',
+                },
             },
         )
         return HttpResponseRedirect(session['url'], status=303)
