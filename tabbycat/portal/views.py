@@ -267,6 +267,7 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         }
 
         session = stripe.checkout.Session.create(
+            payment_method_types=['card', 'acss_debit'],
             success_url="https://%s.%s/" % (self.object.schema_name, main_domain),
             cancel_url="https://%s/tournaments/new/" % (main_domain,),
             line_items=items,
@@ -361,6 +362,7 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
         }
 
         session = stripe.checkout.Session.create(
+            payment_method_types=['card', 'acss_debit'],
             success_url="https://%s/" % (main_domain,),
             cancel_url="https://%s/" % (main_domain,),
             line_items=[{
@@ -386,7 +388,7 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
                 'acss_debit': {
                     'mandate_options': {
                         'payment_schedule': 'sporadic',
-                        'transaction_type': self.acss_customer_type,
+                        'transaction_type': 'personal',
                     },
                 },
                 'wechat_pay': {
