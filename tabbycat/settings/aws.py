@@ -37,6 +37,8 @@ DATABASE_ROUTERS = (
 )
 
 TENANT_LIMIT_SET_CALLS = False
+TENANT_CREATION_FAKES_MIGRATIONS = os.environ.get('TENANT_BASE_SCHEMA', None) is not None
+TENANT_BASE_SCHEMA = os.environ.get('TENANT_BASE_SCHEMA', None)
 
 # ==============================================================================
 # Django-specific Modules
