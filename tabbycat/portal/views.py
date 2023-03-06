@@ -229,13 +229,13 @@ class CreateInstanceFormView(AssistantMixin, FormView):
         prices = {
             'aud': {},
             'cad': {
-                "site": "price_1MQ9qSF87ztd0bejnnqHp4E2",
-                "backups": "price_1MQA1aF87ztd0bejNw7Qwdh2",
+                "site": settings.STRIPE_SITE_PRICE,
+                "backups": settings.STRIPE_BACKUPS_PRICE,
             },
             'eur': {},
             'usd': {
-                "site": "price_1MQ9qSF87ztd0bejnnqHp4E2",
-                "backups": "price_1MQA1aF87ztd0bejNw7Qwdh2",
+                "site": settings.STRIPE_SITE_PRICE,
+                "backups": settings.STRIPE_BACKUPS_PRICE,
             },
         }
 
@@ -341,8 +341,8 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
         currency, qtd = form.save()
         main_domain = self.client.domains.get(is_primary=True)
         prices = {
-            'cad': "price_1MQA29F87ztd0bej5fIbE2Yk",
-            'usd': "price_1MQA29F87ztd0bej5fIbE2Yk",
+            'cad': settings.STRIPE_EXTRA_TOURNAMENT_PRICE,
+            'usd': settings.STRIPE_EXTRA_TOURNAMENT_PRICE,
         }
 
         customers = list(filter(lambda c: c['currency'] == currency, stripe.Customer.list(
