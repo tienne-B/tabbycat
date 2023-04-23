@@ -282,6 +282,9 @@ class CreateInstanceFormView(AssistantMixin, FormView):
             automatic_tax={
                 "enabled": True,
             },
+            tax_id_collection={
+                'enabled': True,
+            },
             customer_update={
                 "address": "auto",
                 "name": "auto",
@@ -379,6 +382,9 @@ class IncreaseSiteLimitView(CreateInstanceFormView):
             },
             automatic_tax={
                 "enabled": True,
+            },
+            tax_id_collection={
+                'enabled': True,
             },
             customer_update={
                 "address": "auto",
