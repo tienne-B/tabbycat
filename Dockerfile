@@ -12,8 +12,8 @@ ENV IN_DOCKER 1
 # Setup Node/NPM
 RUN apt-get update
 RUN apt-get install -y curl nginx
-RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
-RUN apt-get install -y nodejs
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash -
+RUN apt-get install -y nodejs npm
 
 # Copy all our files into the baseimage and cd to that directory
 RUN mkdir /tcd

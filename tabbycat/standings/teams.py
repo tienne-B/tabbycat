@@ -42,7 +42,7 @@ class TeamScoreQuerySetMetricAnnotator(QuerySetMetricAnnotator):
 
     def get_annotation_filter(self, round=None):
         annotation_filter = Q(
-            debateteam__debate__round__stage=Round.STAGE_PRELIMINARY,
+            debateteam__debate__round__stage=Round.Stage.PRELIMINARY,
         )
         if round is not None:
             annotation_filter &= Q(debateteam__debate__round__seq__lte=round.seq)
@@ -146,7 +146,7 @@ class AverageIndividualScoreMetricAnnotator(TeamScoreQuerySetMetricAnnotator):
 
     def get_annotation_filter(self, round=None):
         annotation_filter = Q(
-            debateteam__debate__round__stage=Round.STAGE_PRELIMINARY,
+            debateteam__debate__round__stage=Round.Stage.PRELIMINARY,
             debateteam__speakerscore__ballot_submission__confirmed=True,
             debateteam__speakerscore__ghost=False,
         )
@@ -183,7 +183,7 @@ class BaseDrawStrengthMetricAnnotator(BaseMetricAnnotator):
 
         # Make a copy of teams queryset and annotate with opponents
         opponents_filter = ~Q(debateteam__debate__debateteam__team_id=F('id'))
-        opponents_filter &= Q(debateteam__debate__round__stage=Round.STAGE_PRELIMINARY)
+        opponents_filter &= Q(debateteam__debate__round__stage=Round.Stage.PRELIMINARY)
         if round is not None:
             opponents_filter &= Q(debateteam__debate__round__seq__lte=round.seq)
         opponents_annotation = ArrayAgg('debateteam__debate__debateteam__team_id',
@@ -228,7 +228,7 @@ class TeamPullupsMetricAnnotator(TeamScoreQuerySetMetricAnnotator):
     an associated DebateTeam object)."""
 
     key = "npullups"
-    name = _("number of pullups before this round")
+    name = _("number of pullups")
     abbr = _("PU")
 
     function = Count
@@ -240,6 +240,20 @@ class TeamPullupsMetricAnnotator(TeamScoreQuerySetMetricAnnotator):
 
     def get_where_field(self):
         return 'debateteam__flags__contains'
+
+
+class PullupDebatesMetricAnnotator(TeamPullupsMetricAnnotator):
+    """Metric annotator for number of times the team has been in a pull-up room.
+
+    How many teams the team has faced a pulled up team (i.e., has a pullup
+    flag in an associated Debate object)."""
+
+    key = "pullup_debates"
+    name = _("number of times in pullup debates")
+    abbr = _("SPu")
+
+    def get_where_field(self):
+        return 'debateteam__debate__flags__contains'
 
 
 class NumberOfAdjudicatorsMetricAnnotator(TeamScoreQuerySetMetricAnnotator):
@@ -333,7 +347,7 @@ class WhoBeatWhomMetricAnnotator(RepeatedMetricAnnotator):
             ballot_submission__confirmed=True,
             debate_team__team=tsi.team,
             debate_team__debate__debateteam__team=other.team,
-            debate_team__debate__round__stage=Round.STAGE_PRELIMINARY,
+            debate_team__debate__round__stage=Round.Stage.PRELIMINARY,
         )
 
         if round is not None:
@@ -396,6 +410,7 @@ class TeamStandingsGenerator(BaseStandingsGenerator):
         "margin_sum"          : SumMarginMetricAnnotator,
         "margin_avg"          : AverageMarginMetricAnnotator,
         "npullups"            : TeamPullupsMetricAnnotator,
+        "pullup_debates"      : PullupDebatesMetricAnnotator,
         "num_adjs"            : NumberOfAdjudicatorsMetricAnnotator,
         "firsts"              : NumberOfFirstsMetricAnnotator,
         "seconds"             : NumberOfSecondsMetricAnnotator,
