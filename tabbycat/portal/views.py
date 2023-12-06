@@ -491,11 +491,11 @@ class SESWebhookView(View):
         message_body = json.loads(body['Message'])
         status = None
         if 'bounce' in message_body:
-            status = EmailStatus.EVENT_TYPE_BOUNCED
+            status = EmailStatus.EventType.BOUNCED
         elif 'complaint' in message_body:
-            status = EmailStatus.EVENT_TYPE_SPAM
+            status = EmailStatus.EventType.SPAM
         elif 'delivery' in message_body:
-            status = EmailStatus.EVENT_TYPE_DELIVERED
+            status = EmailStatus.EventType.DELIVERED
 
         mail_body = message_body.get('mail', {})
         headers = {h['name']: h['value'] for h in mail_body.get('headers', {})}
