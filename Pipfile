@@ -21,7 +21,7 @@ django-redis = "*"
 django-cors-headers = "*"
 psycopg2-binary = "*"
 asgiref = "*"
-channels = "*"
+channels = "==3.*"
 channels-redis = "*"
 ipython = "==7.*"
 munkres = "*"
@@ -43,7 +43,6 @@ networkx = "*" # Avoid its dependencies (SciPy)
 django-tenants = "*"
 stripe = "*"
 requests = "*"
-"backports.zoneinfo" = "*"
 
 [dev-packages]
 pre-commit = "*"
@@ -55,4 +54,4 @@ sphinx-rtd-theme = "*"
 sphinx-intl = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"
