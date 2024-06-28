@@ -74,7 +74,7 @@ class ScoresMixin:
 
     def get_score(self, side: str, position: int):
         if len(self.criteria) > 0:
-            return sum(score.score * type(score.score)(criterion.weight) for criterion, score in self.criteria_scores[side][position].items())
+            return sum(score * type(score)(criterion.weight) for criterion, score in self.criteria_scores[side][position].items())
         return self.scores[side][position]
 
     def set_speaker_rank(self, side, position, score):
