@@ -37,8 +37,8 @@ function refresh_totals(scoresheet) {
         }
       }
     }
-    var aff = sum($('.side-0.score input', $scoresheet));
-    var neg = sum($('.side-1.score input', $scoresheet));
+    var aff = sum($('.side-0.score input.total', $scoresheet));
+    var neg = sum($('.side-1.score input.total', $scoresheet));
     $aff_total.text(aff);
     $neg_total.text(neg);
 
