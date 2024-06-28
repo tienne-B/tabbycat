@@ -19,7 +19,7 @@ function refresh_totals(scoresheet) {
   // Fix the branching logic here into something cleaner
   var allClasses = 'btn-dark btn-secondary btn-success btn-primary btn-warning btn-danger btn-info';
 
-  if ("{{ pref.teams_in_debate }}" === 2) {
+  if ("{{ pref.teams_in_debate }}" == 2) {
     // 2-team
     $aff_total = $('.0_total', $scoresheet);
     $neg_total = $('.1_total', $scoresheet);
